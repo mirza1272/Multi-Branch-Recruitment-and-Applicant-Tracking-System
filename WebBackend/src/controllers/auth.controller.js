@@ -9,6 +9,10 @@ import { generateTokenAndSetCookie } from "../utils/generateToken.js";
 // @access  Public
 // ─────────────────────────────────────────────
 export const register = asyncHandler(async (req, res) => {
+  if (!req.body) {
+    throw new ApiError(400, "Request body is required");
+  }
+
   const { name, email, password, role } = req.body;
 
   if (!name || !email || !password) {
@@ -40,6 +44,10 @@ export const register = asyncHandler(async (req, res) => {
 // @access  Public
 // ─────────────────────────────────────────────
 export const login = asyncHandler(async (req, res) => {
+  if (!req.body) {
+    throw new ApiError(400, "Request body is required");
+  }
+
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -92,6 +100,10 @@ export const getMe = asyncHandler(async (req, res) => {
 // @access  Private
 // ─────────────────────────────────────────────
 export const updateProfile = asyncHandler(async (req, res) => {
+  if (!req.body) {
+    throw new ApiError(400, "Request body is required");
+  }
+
   const { name, email } = req.body;
 
   const updates = {};
