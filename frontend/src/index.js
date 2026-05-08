@@ -1,0 +1,23 @@
+import Login from "./Components/Login/Login";
+import Header from "./Components/Header/Header";
+import Footer from "./Components/Footer/Footer";
+import Home from "./Components/Home/Home";
+import Jobs from "./Components/AllJobs/Jobs";
+import ForgetPass from './Components/Login/ForgetPass';
+import ForgetPin from './Components/Login/ForgetPin';
+import Passchange from './Components/Login/Passchange';
+import SignUp from './Components/SignUp/SignUp';
+import VerifyUser from './Components/SignUp/VerifyUser';
+import EditProfile from './Components/SignUp/EditProfile';
+import Profile from './Components/Profile/Profile';
+import JobDetails from './Components/AllJobs/Job Details';
+import ApplyJob from './Components/AllJobs/ApplyJob';
+import Applications from './Components/Applications/Applications';
+import AboutUs from './Components/AboutUs/AboutUs';
+import ContactUs from './Components/ContactUs/ContactUs';
+import TermsPolicies from './Components/Terms_and_Polices/Terms_policies';
+import HRDashboard from './Components/Dashboard/HRDashboard';
+import ViewCandidateApp from './Components/Dashboard/viewcandidateapp';
+import PostJob from './Components/Dashboard/PostJob';
+
+export { Login, Header, Footer, Home, Jobs, ForgetPass, ForgetPin, Passchange, SignUp, VerifyUser, EditProfile, Profile, JobDetails, ApplyJob, Applications, AboutUs, ContactUs, TermsPolicies, HRDashboard, ViewCandidateApp, PostJob };
