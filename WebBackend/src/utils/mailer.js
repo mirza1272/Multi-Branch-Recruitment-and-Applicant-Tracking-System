@@ -41,6 +41,22 @@ const baseLayout = (content) => `
   </div>
 `;
 
+export const sendOTP = async ({ to, otp }) => {
+  const html = baseLayout(`
+    <h2 style="color: #333;">Email verification code</h2>
+    <p>Your one-time verification code is:</p>
+    <div style="font-size: 32px; font-weight: 700; letter-spacing: 0.2em; margin: 24px 0; padding: 18px 24px; background: #eef4ff; color: #1a237e; border-radius: 14px; display: inline-block;">
+      ${otp}
+    </div>
+    <p style="margin-top: 1rem; color: #555;">This code will expire in 15 minutes.</p>
+    <p style="color: #555;">If you did not request this code, please ignore this email.</p>
+    <br/>
+    <p style="color: #555;">Thanks,<br/>ATS Team</p>
+  `);
+
+  await sendEmail({ to, subject: EMAIL_SUBJECTS.OTP_VERIFICATION, html });
+};
+
 /**
  * Notify candidate: application received
  */

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { loginRequest } from "../../api/api";
 
 const C = { bg: '#0F172A', card: '#1E293B', primary: '#3B82F6', accent: '#22C55E', text: '#F1F5F9', muted: '#94A3B8', border: '#334155' };
 const MailIcon = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>;
@@ -13,12 +14,36 @@ function Login() {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        // Backend integration point: call login API here
-        console.log("Logging in:", { email, password });
-        navigate('/');
+        setError("");
+        setIsLoading(true);
+
+        try {
+            const response = await loginRequest({ email, password });
+            const user = response?.data?.data?.user || response?.data?.user;
+
+            if (!user) {
+                throw new Error("Invalid login response from server.");
+            }
+
+            localStorage.setItem('user', JSON.stringify(user));
+            window.dispatchEvent(new Event('auth-change'));
+
+            if (user.role === 'admin' || user.role === 'recruiter') {
+                navigate('/hr-dashboard');
+            } else {
+                navigate('/jobs');
+            }
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.message || err.message || 'Unable to sign in. Please check your credentials.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -29,6 +54,11 @@ function Login() {
                     <h1 style={{ fontSize: '1.5rem', fontWeight: '800', color: C.text, marginBottom: '0.3rem' }}>Welcome Back</h1>
                     <p style={{ fontSize: '0.85rem', color: C.muted }}>Sign in to your account</p>
                 </div>
+                {error && (
+                    <div style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', padding: '1rem', borderRadius: '10px', marginBottom: '1.25rem', fontSize: '0.9rem' }}>
+                        {error}
+                    </div>
+                )}
                 <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     <div>
                         <label style={{ fontSize: '0.8rem', fontWeight: '600', color: C.text, display: 'block', marginBottom: '0.4rem' }}>Email Address</label>
@@ -51,7 +81,9 @@ function Login() {
                                 onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none'; e.target.style.background = '#F9FAFB'; }} />
                         </div>
                     </div>
-                    <button type="submit" className="btn-primary" style={{ width: '100%', padding: '0.75rem', marginTop: '0.25rem' }}>Sign In</button>
+                    <button type="submit" className="btn-primary" style={{ width: '100%', padding: '0.75rem', marginTop: '0.25rem' }} disabled={isLoading}>
+                        {isLoading ? 'Signing in...' : 'Sign In'}
+                    </button>
                 </form>
                 <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.8rem', color: C.muted }}>
                     Don't have an account? <a href="/signup" style={{ color: C.primary, fontWeight: '600', cursor: 'pointer' }}>Request Access</a>

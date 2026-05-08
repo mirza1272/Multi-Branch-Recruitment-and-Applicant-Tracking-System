@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { registerRequest } from "../../api/api";
 
 const C = { bg: '#0F172A', card: '#1E293B', primary: '#3B82F6', text: '#F1F5F9', muted: '#94A3B8', border: '#334155' };
 
@@ -43,7 +44,7 @@ function SignUp() {
         sessionStorage.setItem('signup_form_progress', JSON.stringify(formData));
     }, [formData]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         // Strong password verification
@@ -57,9 +58,22 @@ function SignUp() {
             setError("You must accept the terms and conditions to create an account.");
             return;
         }
+
         setError("");
-        sessionStorage.removeItem('signup_form_progress'); // Clear on success
-        navigate('/verify-user', { state: { userData: formData } });
+
+        try {
+            await registerRequest({
+                name: formData.name,
+                email: formData.email,
+                password: formData.password,
+                role: formData.role.toLowerCase(),
+            });
+
+            sessionStorage.removeItem('signup_form_progress');
+            navigate('/verify-user', { state: { email: formData.email } });
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || 'Unable to register. Please try again.');
+        }
     };
 
     const inputS = { width: '100%', background: C.bg, border: `1.5px solid ${C.border}`, borderRadius: '10px', padding: '0.75rem 1rem 0.75rem 2.75rem', fontSize: '0.875rem', color: C.text, outline: 'none', fontFamily: 'inherit', transition: 'all 0.2s ease' };

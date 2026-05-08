@@ -20,6 +20,15 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "recruiter", "candidate"],
       default: "candidate",
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    otpCode: {
+      type: String,
+      select: false,
+    },
+    otpExpiresAt: Date,
     password: {
       type: String,
       required: [true, "Password is required"],

@@ -42,4 +42,5 @@ export const EMAIL_SUBJECTS = {
   REJECTED: "Update on Your Application",
   ACCEPTED: "Offer Extended – Congratulations!",
   INTERVIEW_SCHEDULED: "Interview Scheduled – Action Required",
+  OTP_VERIFICATION: "Verify Your Email Address",
 };
