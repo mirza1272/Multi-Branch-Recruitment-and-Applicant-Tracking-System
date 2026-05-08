@@ -51,7 +51,12 @@ function VerifyUser() {
         try {
             const response = await verifyOtpRequest({ email, otp: code });
             const user = response?.data?.data?.user;
+            const token = response?.data?.data?.token || response?.data?.token;
             localStorage.setItem('user', JSON.stringify(user));
+            if (token) {
+                localStorage.setItem('token', token);
+                console.log('✅ Token saved to localStorage');
+            }
             window.dispatchEvent(new Event('auth-change'));
             navigate('/jobs');
         } catch (err) {

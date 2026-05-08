@@ -36,9 +36,14 @@ app.use(cookieParser());
 // Debug middleware to log requests
 app.use((req, res, next) => {
   if (req.method === "POST" || req.method === "PATCH") {
-    console.log(`📨 ${req.method} ${req.originalUrl}`);
-    console.log("Headers:", req.headers);
-    console.log("Body:", req.body);
+    console.log(`\n📨 ${req.method} ${req.originalUrl}`);
+    console.log(`🔐 Auth Token:`, req.cookies?.token ? "✅ Present" : "❌ Missing");
+    // Only log body if it's not multipart (multer will handle that)
+    if (!req.headers["content-type"]?.includes("multipart")) {
+      console.log("📋 Body:", req.body);
+    } else {
+      console.log("📋 Type: [Multipart form data - will be parsed by multer]");
+    }
   }
   next();
 });

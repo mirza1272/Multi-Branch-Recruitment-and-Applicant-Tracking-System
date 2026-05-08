@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ALL_JOBS } from "./JobsData";
+import { getJobsRequest, getBranchesRequest } from "../../api/api";
 import { CATEGORIES, getDynamicBranches } from "../../Constants";
 
 const SearchIcon = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>;
@@ -31,6 +31,13 @@ function Jobs() {
     const [minSalary, setMinSalary] = useState(0);
     const [sortBy, setSortBy] = useState("Latest");
     const [currentPage, setCurrentPage] = useState(1);
+    
+    // Fetch state
+    const [jobs, setJobs] = useState([]);
+    const [totalJobs, setTotalJobs] = useState(0);
+    const [branches, setBranches] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -39,26 +46,58 @@ function Jobs() {
         }
     }, [navigate]);
 
+    // Fetch branches on component mount
+    useEffect(() => {
+        const fetchBranches = async () => {
+            try {
+                const response = await getBranchesRequest();
+                setBranches(response.data.data.branches || []);
+            } catch (err) {
+                console.error("Error fetching branches:", err);
+            }
+        };
+        fetchBranches();
+    }, []);
+
     useEffect(() => {
         setSearchTerm(searchParams.get("keyword") || "");
         setBranch(searchParams.get("branch") || "All");
         setDepartment(searchParams.get("department") || "All");
     }, [location.search]);
 
-    useEffect(() => { setCurrentPage(1); }, [searchTerm, branch, department, minSalary, sortBy]);
+    // Fetch jobs from backend
+    useEffect(() => {
+        const fetchJobs = async () => {
+            try {
+                setLoading(true);
+                setError(null);
 
-    const filteredResults = useMemo(() => {
-        let r = ALL_JOBS.filter(j =>
-            (j.title.toLowerCase().includes(searchTerm.toLowerCase()) || j.company.toLowerCase().includes(searchTerm.toLowerCase())) &&
-            (branch === "All" || j.branchId === branch) &&
-            (department === "All" || j.category === department) &&
-            j.salaryNumeric >= minSalary
-        );
-        return r.sort((a, b) => b.timestamp - a.timestamp);
-    }, [searchTerm, branch, department, minSalary, sortBy]);
+                const params = {
+                    page: currentPage,
+                    limit: 6,
+                    sortBy: "newest",
+                };
 
-    const totalPages = Math.ceil(filteredResults.length / JOBS_PER_PAGE);
-    const displayedJobs = filteredResults.slice((currentPage - 1) * JOBS_PER_PAGE, currentPage * JOBS_PER_PAGE);
+                if (branch !== "All") params.branchId = branch;
+                if (department !== "All") params.category = department;
+
+                const response = await getJobsRequest(params);
+                
+                setJobs(response.data.data.jobs || []);
+                setTotalJobs(response.data.data.pagination?.total || 0);
+            } catch (err) {
+                console.error("Error fetching jobs:", err);
+                const errorMsg = err.response?.data?.message || err.message || "Failed to fetch jobs";
+                setError(errorMsg);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchJobs();
+    }, [searchTerm, branch, department, currentPage]);
+
+    const totalPages = Math.ceil(totalJobs / 6);
 
     const inputS = { width: '100%', background: '#0F172A', border: `1.5px solid ${C.border}`, borderRadius: '8px', padding: '0.55rem 0.85rem 0.55rem 2.5rem', fontSize: '0.8rem', color: C.text, outline: 'none', fontFamily: 'inherit' };
     const labelS = { fontSize: '0.65rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.07em', color: C.muted, display: 'block', marginBottom: '0.4rem' };
@@ -107,7 +146,7 @@ function Jobs() {
                                     <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: C.primary }}><MapPinIcon /></span>
                                     <select value={branch} onChange={e => setBranch(e.target.value)} style={{ ...inputS, cursor: 'pointer', appearance: 'none' }}>
                                         <option value="All">All Branches</option>
-                                        {getDynamicBranches().map(b => <option key={b} value={b}>{b}</option>)}
+                                        {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
                                     </select>
                                 </div>
                             </div>
@@ -140,42 +179,51 @@ function Jobs() {
                     <main style={{ flex: 1, minWidth: 0 }}>
                         {/* Sort row */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <p style={{ fontSize: '0.8rem', color: C.muted }}>Showing <strong style={{ color: C.text }}>{filteredResults.length}</strong> jobs</p>
+                            <p style={{ fontSize: '0.8rem', color: C.muted }}>Showing <strong style={{ color: C.text }}>{loading ? "..." : totalJobs}</strong> jobs</p>
                         </div>
 
-                        {/* Job Cards */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-                            {displayedJobs.length > 0 ? displayedJobs.map(job => (
-                                <div key={job.jobId} className="glass-card" style={{ padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
-                                            <h3 style={{ fontSize: '1rem', fontWeight: '700', color: C.text }}>{job.title}</h3>
-                                        </div>
-                                        <p style={{ fontSize: '0.8rem', color: C.muted, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                            <span style={{ width: '6px', height: '6px', background: C.accent, borderRadius: '50%', display: 'inline-block' }} />{job.company}
-                                        </p>
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                                            {[
-                                                { icon: <BriefcaseIcon />, text: job.category },
-                                                { icon: <ClockIcon />, text: job.type },
-                                                { icon: <DollarIcon />, text: `$${job.salary}` },
-                                                { icon: <MapPinIcon />, text: job.location },
-                                                { icon: <SearchIcon />, text: `${job.seats} Seats` },
-                                            ].map((tag, idx) => (
-                                                <span key={idx} className="tag-pill">
-                                                    <span style={{ color: C.primary }}>{tag.icon}</span>{tag.text}
-                                                </span>
-                                            ))}
-                                        </div>
+                        {error && (
+                            <div style={{ background: '#DC2626', borderRadius: '8px', padding: '1rem', marginBottom: '1rem', color: 'white', fontSize: '0.85rem' }}>
+                                {error}
+                            </div>
+                        )}
+
+                        {loading && (
+                            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '4rem', textAlign: 'center' }}>
+                                <p style={{ color: C.muted }}>Loading jobs...</p>
+                            </div>
+                        )}
+                        
+                        {!loading && jobs.length > 0 ? jobs.map(job => (
+                            <div key={job._id} className="glass-card" style={{ padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
+                                        <h3 style={{ fontSize: '1rem', fontWeight: '700', color: C.text }}>{job.title}</h3>
                                     </div>
-                                    <button onClick={() => navigate(`/job-details/${job.jobId}`)} className="btn-primary" style={{ padding: '0.5rem 1.25rem', fontSize: '0.8rem', flexShrink: 0 }}>Job Details</button>
+                                    <p style={{ fontSize: '0.8rem', color: C.muted, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                        <span style={{ width: '6px', height: '6px', background: C.accent, borderRadius: '50%', display: 'inline-block' }} />{job.company}
+                                    </p>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                                        {[
+                                            { icon: <BriefcaseIcon />, text: job.category },
+                                            { icon: <ClockIcon />, text: job.type },
+                                            { icon: <DollarIcon />, text: job.salary ? `$${job.salary}` : 'Not specified' },
+                                            { icon: <MapPinIcon />, text: job.location },
+                                            { icon: <SearchIcon />, text: `${job.seats} Seats` },
+                                        ].map((tag, idx) => (
+                                            <span key={idx} className="tag-pill">
+                                                <span style={{ color: C.primary }}>{tag.icon}</span>{tag.text}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
-                            )) : (
-                                <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '4rem', textAlign: 'center' }}>
-                                    <p style={{ color: C.muted }}>No jobs match your search criteria.</p>
-                                </div>
-                            )}
-                        </div>
+                                <button onClick={() => navigate(`/job-details/${job._id}`)} className="btn-primary" style={{ padding: '0.5rem 1.25rem', fontSize: '0.8rem', flexShrink: 0 }}>Job Details</button>
+                            </div>
+                        )) : !loading && (
+                            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '4rem', textAlign: 'center' }}>
+                                <p style={{ color: C.muted }}>No jobs match your search criteria.</p>
+                            </div>
+                        )}
 
                         {/* Pagination */}
                         {totalPages > 1 && (

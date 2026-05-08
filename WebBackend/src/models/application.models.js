@@ -12,12 +12,29 @@ const applicationSchema = new mongoose.Schema(
       ref: "Job",
       required: [true, "Job is required"],
     },
+    // Candidate info snapshot (captured at time of application)
+    candidateName: String,
+    candidateEmail: String,
+    candidatePhone: String,
+    candidateLocation: String,
+    candidateQualification: String,
+    candidateExperience: String,
+    candidateCurrentCompany: String,
+    candidateSkills: String,
+    
+    // Files
     resumeUrl: {
       type: String,
     },
     coverLetterUrl: {
       type: String,
     },
+    
+    // Application questions
+    additionalInfo: String, // Why do you want to work here?
+    achievement: String, // Notable achievement
+    expectedSalary: String, // Expected salary
+    
     status: {
       type: String,
       enum: ["pending", "shortlisted", "rejected", "accepted"],

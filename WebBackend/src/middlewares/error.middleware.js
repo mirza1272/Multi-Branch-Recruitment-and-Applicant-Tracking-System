@@ -2,6 +2,13 @@ import ApiError from "../utils/ApiError.js";
 
 // eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
+  console.error(`\n${'='.repeat(60)}`);
+  console.error(`❌ ERROR HANDLER TRIGGERED`);
+  console.error(`📍 Path: ${req.method} ${req.originalUrl}`);
+  console.error(`💬 Message: ${err.message}`);
+  console.error(`📌 Type: ${err.name || "Unknown"}`);
+  console.error(`${'='.repeat(60)}\n`);
+
   // If it's our custom ApiError, use its status code
   if (err instanceof ApiError) {
     return res.status(err.statusCode).json({
@@ -24,6 +31,7 @@ const errorHandler = (err, req, res, next) => {
   // Mongoose validation error
   if (err.name === "ValidationError") {
     const messages = Object.values(err.errors).map((e) => e.message);
+    console.error(`Validation errors:`, messages);
     return res.status(400).json({
       success: false,
       message: "Validation Error",

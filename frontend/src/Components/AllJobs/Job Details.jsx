@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ALL_JOBS } from "./JobsData";
+import { getJobByIdRequest, getJobsRequest } from "../../api/api";
 
 const C = { bg: '#0F172A', card: '#1E293B', primary: '#3B82F6', text: '#F1F5F9', muted: '#94A3B8', border: '#334155', accent: '#2DD4BF' };
 
@@ -15,30 +15,103 @@ function JobDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const job = useMemo(() => ALL_JOBS.find(j => j.jobId === parseInt(id)) || ALL_JOBS[0], [id]);
+    const [job, setJob] = useState(null);
+    const [relatedJobs, setRelatedJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Related Jobs Algorithm: Score based on Department, Branch, and Location
-    const relatedJobs = useMemo(() => {
-        return ALL_JOBS
-            .filter(j => j.jobId !== job.jobId) // Exclude current job
-            .map(j => {
-                let score = 0;
-                if (j.department === job.department) score += 5; // Priority: Same Department
-                if (j.branchId === job.branchId) score += 3;     // Secondary: Same Branch
-                if (j.location === job.location) score += 1;     // Tertiary: Same Location
-                return { ...j, score };
-            })
-            .sort((a, b) => b.score - a.score) // Sort by highest score
-            .slice(0, 3); // Take top 3
-    }, [job]);
-
+    // Fetch job details
     useEffect(() => {
-        window.scrollTo(0, 0);
+        const fetchJobDetails = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                
+                const response = await getJobByIdRequest(id);
+                setJob(response.data.data);
+            } catch (err) {
+                setError(err.response?.data?.message || "Failed to load job details");
+                console.error("Error fetching job:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchJobDetails();
     }, [id]);
+
+    // Fetch related jobs
+    useEffect(() => {
+        const fetchRelatedJobs = async () => {
+            if (!job) return;
+
+            try {
+                const response = await getJobsRequest({
+                    category: job.category,
+                    limit: 6,
+                });
+                
+                const jobs = response.data.data.jobs || [];
+                const filtered = jobs
+                    .filter(j => j._id !== job._id)
+                    .map(j => {
+                        let score = 0;
+                        if (j.department === job.department) score += 5;
+                        if (j.branchId === job.branchId) score += 3;
+                        if (j.location === job.location) score += 1;
+                        return { ...j, score };
+                    })
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 3);
+                
+                setRelatedJobs(filtered);
+            } catch (err) {
+                console.error("Error fetching related jobs:", err);
+            }
+        };
+
+        fetchRelatedJobs();
+    }, [job]);
 
     return (
         <div style={{ background: C.bg, minHeight: '100vh', color: C.text, fontFamily: 'Inter, sans-serif' }}>
 
+            {/* Loading State */}
+            {loading && (
+                <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <p style={{ color: C.muted, fontSize: '1.1rem' }}>Loading job details...</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Error State */}
+            {error && !loading && (
+                <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ textAlign: 'center', maxWidth: '500px' }}>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '1rem', color: '#DC2626' }}>Error</h2>
+                        <p style={{ color: C.muted, marginBottom: '2rem' }}>{error}</p>
+                        <button
+                            onClick={() => navigate('/jobs')}
+                            style={{
+                                padding: '0.75rem 2rem',
+                                borderRadius: '8px',
+                                background: C.primary,
+                                color: 'white',
+                                border: 'none',
+                                fontWeight: '700',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Back to Jobs
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Content */}
+            {!loading && job && (
+            <>
             {/* Hero Section with Premium Background */}
             <div style={{ height: '400px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <img
@@ -96,14 +169,7 @@ function JobDetails() {
                                     <div style={{ width: '32px', height: '32px', background: 'rgba(59,130,246,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.primary }}><DollarIcon /></div>
                                     <div>
                                         <p style={{ fontSize: '0.6rem', color: C.muted, fontWeight: '700', textTransform: 'uppercase' }}>Salary Range</p>
-                                        <p style={{ fontSize: '0.85rem', fontWeight: '700' }}>{job.salary}</p>
-                                    </div>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                    <div style={{ width: '32px', height: '32px', background: 'rgba(59,130,246,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.primary }}><MapIcon /></div>
-                                    <div>
-                                        <p style={{ fontSize: '0.6rem', color: C.muted, fontWeight: '700', textTransform: 'uppercase' }}>Location</p>
-                                        <p style={{ fontSize: '0.85rem', fontWeight: '700' }}>{job.location}</p>
+                                        <p style={{ fontSize: '0.85rem', fontWeight: '700' }}>{job.salary || 'Not specified'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -142,7 +208,7 @@ function JobDetails() {
                             onClick={() => {
                                 const isLoggedIn = !!localStorage.getItem('user');
                                 if (isLoggedIn) {
-                                    navigate(`/apply-job/${job.jobId}`);
+                                    navigate(`/apply-job/${job._id}`);
                                 } else {
                                     navigate('/login');
                                 }
@@ -188,14 +254,14 @@ function JobDetails() {
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem' }}>
                         {relatedJobs.map(rJob => (
-                            <div key={rJob.id} style={{ background: C.card, borderRadius: '20px', border: `1px solid ${C.border}`, padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
-                                onClick={() => navigate(`/job-details/${rJob.jobId}`)}
+                            <div key={rJob._id} style={{ background: C.card, borderRadius: '20px', border: `1px solid ${C.border}`, padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+                                onClick={() => navigate(`/job-details/${rJob._id}`)}
                                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.borderColor = C.primary; e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.4)'; }}
                                 onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.boxShadow = 'none'; }}>
 
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ width: '56px', height: '56px', background: 'rgba(59,130,246,0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.primary, fontWeight: '900', fontSize: '1.25rem' }}>
-                                        {rJob.company[0]}
+                                        {rJob.company?.[0] || 'J'}
                                     </div>
                                     <span style={{ fontSize: '0.7rem', color: C.accent, fontWeight: '800', textTransform: 'uppercase', padding: '0.3rem 0.75rem', background: 'rgba(45,212,191,0.1)', borderRadius: '99px' }}>
                                         {rJob.score >= 5 ? 'Top Match' : 'Suggested'}
@@ -217,7 +283,7 @@ function JobDetails() {
                                 </div>
 
                                 <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontWeight: '800', color: C.text }}>{rJob.salary.split(' ')[0]}<span style={{ fontSize: '0.8rem', color: C.muted, fontWeight: '400' }}> / Monthly</span></span>
+                                    <span style={{ fontWeight: '800', color: C.text }}>{rJob.salary ? rJob.salary.split(' ')[0] : '$0'}<span style={{ fontSize: '0.8rem', color: C.muted, fontWeight: '400' }}> / Monthly</span></span>
                                     <button style={{ background: 'transparent', border: 'none', color: C.primary, fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         View Detail →
                                     </button>
@@ -229,6 +295,9 @@ function JobDetails() {
 
             </div>
 
+            </>
+            )}
+
             {/* Global Animations CSS */}
             <style>{`
                 @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
@@ -236,7 +305,7 @@ function JobDetails() {
                 @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
                 @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
             `}</style>
-        </div >
+        </div>
     );
 }
 

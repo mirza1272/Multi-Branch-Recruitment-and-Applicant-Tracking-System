@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ALL_JOBS } from "./JobsData";
+import { getJobByIdRequest, applyForJobRequest } from "../../api/api";
 
 const C = {
     bg: '#0F172A',
@@ -50,8 +50,9 @@ function ApplyJob() {
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
-
-    const job = useMemo(() => ALL_JOBS.find(j => j.jobId === parseInt(id)) || ALL_JOBS[0], [id]);
+    const [job, setJob] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [jobError, setJobError] = useState(null);
 
     const [formData, setFormData] = useState({
         firstName: "",
@@ -76,6 +77,23 @@ function ApplyJob() {
     useEffect(() => {
         window.scrollTo(0, 0);
 
+        // Fetch job details
+        const fetchJob = async () => {
+            try {
+                setLoading(true);
+                setJobError(null);
+                const response = await getJobByIdRequest(id);
+                setJob(response.data.data);
+            } catch (err) {
+                setJobError(err.response?.data?.message || "Failed to load job details");
+                console.error("Error fetching job:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchJob();
+
         // Auto-fill if user is logged in
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
@@ -92,7 +110,7 @@ function ApplyJob() {
                 currentCompany: user.role === 'HR' ? user.name : user.company || ""
             }));
         }
-    }, []);
+    }, [id]);
 
     const handleChange = (e) => {
         const { name, value, type, checked, files } = e.target;
@@ -143,44 +161,84 @@ function ApplyJob() {
         return Object.keys(newE).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validate()) return;
 
         setIsSubmitting(true);
-        // Simulate API Call
-        setTimeout(() => {
-            // Save to localStorage for demo persistence
-            const newApplication = {
-                id: Date.now(),
-                jobId: job.jobId,
-                title: job.title,
-                company: job.company,
-                branch: job.branchId || job.location,
-                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                status: "Under Review",
-                type: job.type,
-                candidate: `${formData.firstName} ${formData.lastName}`,
-                email: formData.email,
-                phone: formData.phone,
-                location: formData.location,
-                qualification: formData.qualification,
-                experience: formData.experience,
-                skills: formData.skills,
-                q1: formData.q1,
-                q2: formData.q2,
-                resumeName: formData.resume ? formData.resume.name : null,
-                coverLetterName: formData.coverLetter ? formData.coverLetter.name : null
-            };
+        try {
+            // Prepare FormData for multipart/form-data
+            const data = new FormData();
+            data.append('jobId', job._id);
+            data.append('firstName', formData.firstName);
+            data.append('lastName', formData.lastName);
+            data.append('email', formData.email);
+            data.append('phone', formData.phone);
+            data.append('location', formData.location);
+            data.append('qualification', formData.qualification);
+            data.append('experience', formData.experience);
+            data.append('currentCompany', formData.currentCompany);
+            data.append('skills', formData.skills);
+            data.append('additionalInfo', formData.q1); // Why work here
+            data.append('achievement', formData.q2); // Achievement
+            data.append('expectedSalary', formData.q3); // Expected salary
+            if (formData.resume) data.append('resume', formData.resume);
+            if (formData.coverLetter) data.append('coverLetter', formData.coverLetter);
 
-            const existingApps = JSON.parse(localStorage.getItem('all_applications')) || [];
-            localStorage.setItem('all_applications', JSON.stringify([newApplication, ...existingApps]));
-
+            const response = await applyForJobRequest(data);
+            
             setIsSubmitting(false);
             setIsSuccess(true);
-            console.log("Application Submitted and Saved:", newApplication);
-        }, 1500);
+            console.log("Application Submitted:", response.data);
+        } catch (err) {
+            setIsSubmitting(false);
+            setErrors({
+                submit: err.response?.data?.message || "Failed to submit application"
+            });
+            console.error("Error submitting application:", err);
+        }
     };
+
+    if (loading) {
+        return (
+            <div style={{ background: C.bg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+                <p style={{ color: C.muted }}>Loading job details...</p>
+            </div>
+        );
+    }
+
+    if (jobError) {
+        return (
+            <div style={{ background: C.bg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+                <div style={{ textAlign: 'center', maxWidth: '500px' }}>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '1rem', color: '#DC2626' }}>Error</h2>
+                    <p style={{ color: C.muted, marginBottom: '2rem' }}>{jobError}</p>
+                    <button
+                        onClick={() => navigate('/jobs')}
+                        style={{
+                            padding: '0.75rem 2rem',
+                            borderRadius: '8px',
+                            background: C.primary,
+                            color: 'white',
+                            border: 'none',
+                            fontWeight: '700',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Back to Jobs
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!job) {
+        return (
+            <div style={{ background: C.bg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+                <p style={{ color: C.muted }}>Job not found</p>
+            </div>
+        );
+    }
 
     if (isSuccess) {
         return (

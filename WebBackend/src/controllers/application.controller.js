@@ -20,54 +20,156 @@ import {
 // Expects multipart/form-data with fields: jobId, resume (file), coverLetter (file)
 // ─────────────────────────────────────────────
 export const applyForJob = asyncHandler(async (req, res) => {
-  const { jobId } = req.body;
-  const userId = req.user._id;
+  try {
+    const { 
+      jobId,
+      firstName,
+      lastName,
+      email,
+      phone,
+      location,
+      qualification,
+      experience,
+      currentCompany,
+      skills,
+      additionalInfo,
+      achievement,
+      expectedSalary
+    } = req.body;
+    const userId = req.user._id;
 
-  if (!jobId) throw new ApiError(400, "Job ID is required");
+    console.log(`\n${'='.repeat(60)}`);
+    console.log(`📝 APPLICATION SUBMISSION STARTED`);
+    console.log(`📊 User ID: ${userId}`);
+    console.log(`📊 Job ID: ${jobId}`);
+    console.log(`📂 Files received:`, Object.keys(req.files || {}));
+    if (req.files?.resume) console.log(`   - Resume: ${req.files.resume[0].originalname} (${req.files.resume[0].size} bytes)`);
+    if (req.files?.coverLetter) console.log(`   - Cover Letter: ${req.files.coverLetter[0].originalname} (${req.files.coverLetter[0].size} bytes)`);
+    console.log(`📋 Candidate Info - ${firstName} ${lastName} (${email})`);
+    console.log(`${'='.repeat(60)}\n`);
 
-  const job = await Job.findById(jobId).populate("branchId", "branchName");
-  if (!job || !job.isActive) throw new ApiError(404, "Job not found or no longer active");
+    if (!jobId) throw new ApiError(400, "Job ID is required");
 
-  // Prevent duplicate applications
-  const existing = await Application.findOne({ userId, jobId });
-  if (existing) throw new ApiError(409, "You have already applied for this job");
+    console.log(`🔍 Checking if job exists (ID: ${jobId})...`);
+    const job = await Job.findById(jobId).populate("branchId", "branchName");
+    if (!job) {
+      console.error(`❌ Job not found: ${jobId}`);
+      throw new ApiError(404, "Job not found");
+    }
+    if (!job.isActive) {
+      console.error(`❌ Job is not active: ${jobId}`);
+      throw new ApiError(404, "Job is no longer active");
+    }
+    console.log(`✅ Job found: ${job.title}`);
 
-  // Upload resume to Cloudinary if provided
-  let resumeUrl = "";
-  if (req.files?.resume?.[0]) {
-    resumeUrl = await uploadToCloudinary(
-      req.files.resume[0].buffer,
-      CLOUDINARY_FOLDERS.RESUMES,
-      `resume_${userId}_${jobId}`
-    );
+    // Prevent duplicate applications
+    console.log(`🔍 Checking for duplicate applications...`);
+    const existing = await Application.findOne({ userId, jobId });
+    if (existing) {
+      console.error(`❌ Duplicate application - User already applied for this job`);
+      throw new ApiError(409, "You have already applied for this job");
+    }
+    console.log(`✅ No duplicate found`);
+
+    // Upload resume to Cloudinary if provided
+    let resumeUrl = "";
+    if (req.files?.resume?.[0]) {
+      try {
+        console.log(`⬆️  Uploading resume to Cloudinary...`);
+        resumeUrl = await uploadToCloudinary(
+          req.files.resume[0].buffer,
+          CLOUDINARY_FOLDERS.RESUMES,
+          `resume_${userId}_${jobId}`
+        );
+        console.log(`✅ Resume uploaded: ${resumeUrl.substring(0, 80)}...`);
+      } catch (error) {
+        console.error(`❌ Resume upload failed:`, error.message);
+        throw new ApiError(400, `Resume upload failed: ${error.message}`);
+      }
+    }
+
+    // Upload cover letter to Cloudinary if provided
+    let coverLetterUrl = "";
+    if (req.files?.coverLetter?.[0]) {
+      try {
+        console.log(`⬆️  Uploading cover letter to Cloudinary...`);
+        coverLetterUrl = await uploadToCloudinary(
+          req.files.coverLetter[0].buffer,
+          CLOUDINARY_FOLDERS.COVER_LETTERS,
+          `cover_${userId}_${jobId}`
+        );
+        console.log(`✅ Cover letter uploaded: ${coverLetterUrl.substring(0, 80)}...`);
+      } catch (error) {
+        console.error(`❌ Cover letter upload failed:`, error.message);
+        throw new ApiError(400, `Cover letter upload failed: ${error.message}`);
+      }
+    }
+
+    // Update user profile with candidate info (if provided)
+    if (firstName || lastName || phone || location || qualification || experience || currentCompany || skills) {
+      try {
+        console.log(`👤 Updating user profile...`);
+        await User.findByIdAndUpdate(userId, {
+          $set: {
+            ...(firstName && lastName && { name: `${firstName} ${lastName}` }),
+            ...(phone && { phone }),
+            ...(location && { location }),
+            ...(qualification && { qualification }),
+            ...(experience && { experience }),
+            ...(currentCompany && { company: currentCompany }),
+            ...(skills && { skills }),
+          },
+        });
+        console.log(`✅ User profile updated`);
+      } catch (error) {
+        console.error(`⚠️  User profile update failed:`, error.message);
+        // Don't throw - application can still be created
+      }
+    }
+
+    console.log(`💾 Creating application in MongoDB...`);
+    const application = await Application.create({
+      userId,
+      jobId,
+      candidateName: firstName && lastName ? `${firstName} ${lastName}` : req.user.name,
+      candidateEmail: email || req.user.email,
+      candidatePhone: phone,
+      candidateLocation: location,
+      candidateQualification: qualification,
+      candidateExperience: experience,
+      candidateCurrentCompany: currentCompany,
+      candidateSkills: skills,
+      resumeUrl,
+      coverLetterUrl,
+      additionalInfo,
+      achievement,
+      expectedSalary,
+    });
+
+    console.log(`✅ Application created in DB: ${application._id}`);
+    console.log(`📧 Sending confirmation email...`);
+
+    // Send confirmation email (non-blocking)
+    sendApplicationReceivedEmail({
+      to: email || req.user.email,
+      name: firstName && lastName ? `${firstName} ${lastName}` : req.user.name,
+      jobTitle: job.title,
+      branchName: job.branchId?.branchName || "Head Office",
+    }).catch((err) => console.error("⚠️  Email send error:", err.message));
+
+    console.log(`\n${'='.repeat(60)}`);
+    console.log(`✅ APPLICATION SUBMISSION SUCCESSFUL`);
+    console.log(`📌 Application ID: ${application._id}`);
+    console.log(`${'='.repeat(60)}\n`);
+
+    return res.status(201).json(new ApiResponse(201, { application }, "Application submitted successfully"));
+  } catch (error) {
+    console.error(`\n${'='.repeat(60)}`);
+    console.error(`❌ APPLICATION SUBMISSION FAILED`);
+    console.error(`Error: ${error.message}`);
+    console.error(`${'='.repeat(60)}\n`);
+    throw error;
   }
-
-  // Upload cover letter to Cloudinary if provided
-  let coverLetterUrl = "";
-  if (req.files?.coverLetter?.[0]) {
-    coverLetterUrl = await uploadToCloudinary(
-      req.files.coverLetter[0].buffer,
-      CLOUDINARY_FOLDERS.COVER_LETTERS,
-      `cover_${userId}_${jobId}`
-    );
-  }
-
-  const application = await Application.create({
-    userId,
-    jobId,
-    resumeUrl,
-    coverLetterUrl,
-  });
-
-  // Send confirmation email (non-blocking)
-  sendApplicationReceivedEmail({
-    to: req.user.email,
-    name: req.user.name,
-    jobTitle: job.title,
-    branchName: job.branchId?.branchName || "Head Office",
-  }).catch((err) => console.error("Email error:", err.message));
-
-  return res.status(201).json(new ApiResponse(201, { application }, "Application submitted successfully"));
 });
 
 // ─────────────────────────────────────────────

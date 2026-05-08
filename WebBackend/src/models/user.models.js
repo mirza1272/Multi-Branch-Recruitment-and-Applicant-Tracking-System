@@ -15,6 +15,14 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    phone: {
+      type: String,
+      trim: true,
+    },
+    location: {
+      type: String,
+      trim: true,
+    },
     role: {
       type: String,
       enum: ["admin", "recruiter", "candidate"],
@@ -29,6 +37,23 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
     otpExpiresAt: Date,
+    // Candidate profile fields
+    qualification: {
+      type: String,
+      trim: true,
+    },
+    experience: {
+      type: String,
+      trim: true,
+    },
+    company: {
+      type: String,
+      trim: true,
+    },
+    skills: {
+      type: String,
+      trim: true,
+    },
     password: {
       type: String,
       required: [true, "Password is required"],

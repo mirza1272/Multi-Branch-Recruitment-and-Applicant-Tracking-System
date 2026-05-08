@@ -7,15 +7,13 @@ export const STATUSES = [
 ];
 
 export const CATEGORIES = [
-    "Hotels & Tourism",
-    "Media",
-    "Construction",
-    "Technology",
-    "Healthcare",
-    "Finance",
-    "Design",
+    "Engineering",
+    "Sales",
     "Marketing",
-    "Customer Support"
+    "HR",
+    "Finance",
+    "Operations",
+    "Other"
 ];
 
 export const INITIAL_BRANCHES = [

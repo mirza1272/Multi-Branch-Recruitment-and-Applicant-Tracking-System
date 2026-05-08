@@ -25,12 +25,18 @@ function Login() {
         try {
             const response = await loginRequest({ email, password });
             const user = response?.data?.data?.user || response?.data?.user;
+            const token = response?.data?.data?.token || response?.data?.token;
 
             if (!user) {
                 throw new Error("Invalid login response from server.");
             }
 
+            // Save both user and token to localStorage
             localStorage.setItem('user', JSON.stringify(user));
+            if (token) {
+                localStorage.setItem('token', token);
+                console.log('✅ Token saved to localStorage');
+            }
             window.dispatchEvent(new Event('auth-change'));
 
             if (user.role === 'admin' || user.role === 'recruiter') {
