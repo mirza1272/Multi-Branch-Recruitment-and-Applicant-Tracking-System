@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { CATEGORIES, getDynamicBranches } from "../../Constants";
+import { CATEGORIES } from "../../Constants";
+import { createJobRequest, updateJobRequest, getJobByIdRequest, getBranchesRequest } from "../../api/api";
 
 const C = {
     bg: '#0F172A',
@@ -16,55 +17,81 @@ const C = {
 const PostJob = () => {
     const navigate = useNavigate();
     const { editId } = useParams();
-    const [branches] = useState(getDynamicBranches());
+    const [branches, setBranches] = useState([]);
+    const [user] = useState(JSON.parse(localStorage.getItem('user')) || {});
     const [formData, setFormData] = useState({
         title: "",
+        company: user.company || "",
         category: CATEGORIES[0],
         type: "Full Time",
         salary: "",
-        location: "",
-        branchId: "Main Branch",
+        branchId: "",
         description: "",
         requirements: "",
-        deadline: ""
+        department: "",
+        experience: "",
+        degree: "",
+        seats: 1,
     });
-
-    useEffect(() => {
-        if (editId) {
-            const managedJobs = JSON.parse(localStorage.getItem('managed_jobs')) || [];
-            const jobToEdit = managedJobs.find(j => j.id.toString() === editId);
-            if (jobToEdit) {
-                setFormData(jobToEdit);
-            }
-        }
-    }, [editId]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = (e) => {
+    useEffect(() => {
+        const fetchBranchesAndJob = async () => {
+            try {
+                // Fetch branches first
+                const branchRes = await getBranchesRequest();
+                const fetchedBranches = branchRes.data?.data?.branches || [];
+                setBranches(fetchedBranches);
+                
+                let defaultBranchId = fetchedBranches.length > 0 ? fetchedBranches[0]._id : "";
+
+                // If edit mode, fetch job details
+                if (editId) {
+                    const jobRes = await getJobByIdRequest(editId);
+                    const job = jobRes.data?.data;
+                    if (job) {
+                        setFormData({
+                            title: job.title || "",
+                            category: job.category || CATEGORIES[0],
+                            type: job.type || "Full Time",
+                            salary: job.salary || "",
+                            branchId: job.branchId?._id || job.branchId || defaultBranchId,
+                            description: job.description || "",
+                            requirements: job.requirements || "",
+                            department: job.department || "",
+                            experience: job.experience || "",
+                            degree: job.degree || "",
+                            seats: job.seats || 1,
+                        });
+                    }
+                } else {
+                    setFormData(prev => ({ ...prev, branchId: defaultBranchId }));
+                }
+            } catch (err) {
+                console.error("Error fetching data:", err);
+            }
+        };
+        fetchBranchesAndJob();
+    }, [editId]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        setTimeout(() => {
-            const managedJobs = JSON.parse(localStorage.getItem('managed_jobs')) || [];
-            
+        try {
             if (editId) {
-                const updatedJobs = managedJobs.map(j => j.id.toString() === editId ? { ...formData, id: j.id, company: j.company, postedAt: j.postedAt, status: j.status } : j);
-                localStorage.setItem('managed_jobs', JSON.stringify(updatedJobs));
+                await updateJobRequest(editId, formData);
             } else {
-                const newJob = {
-                    ...formData,
-                    id: Date.now(),
-                    company: "HRConnect", // Default for now
-                    postedAt: "Just Now",
-                    status: "Active"
-                };
-                localStorage.setItem('managed_jobs', JSON.stringify([newJob, ...managedJobs]));
+                await createJobRequest(formData);
             }
-
-            setIsSubmitting(false);
             navigate('/hr-dashboard');
-        }, 1200);
+        } catch (error) {
+            console.error("Failed to save job:", error);
+            alert(error.response?.data?.message || "Failed to save job");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleChange = (e) => {
@@ -91,6 +118,11 @@ const PostJob = () => {
                                 <input required type="text" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. Senior Software Engineer" style={inputS} />
                             </div>
 
+                            <div style={{ gridColumn: '1 / -1' }}>
+                                <label style={labelS}>Company Name</label>
+                                <input required type="text" name="company" value={formData.company} onChange={handleChange} placeholder="e.g. Tech Solutions Inc." style={inputS} />
+                            </div>
+
                             <div>
                                 <label style={labelS}>Category</label>
                                 <select name="category" value={formData.category} onChange={handleChange} style={inputS}>
@@ -104,20 +136,41 @@ const PostJob = () => {
                                     <option>Full Time</option>
                                     <option>Part Time</option>
                                     <option>Contract</option>
-                                    <option>Remote</option>
+                                    <option>Internship</option>
                                 </select>
+                            </div>
+
+                            <div>
+                                <label style={labelS}>Branch (City)</label>
+                                <select name="branchId" value={formData.branchId} onChange={handleChange} style={inputS} required>
+                                    <option value="" disabled>Select Branch</option>
+                                    {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label style={labelS}>Department</label>
+                                <input required type="text" name="department" value={formData.department} onChange={handleChange} placeholder="e.g. Engineering" style={inputS} />
                             </div>
 
                             <div>
                                 <label style={labelS}>Monthly Salary Range</label>
-                                <input type="text" name="salary" value={formData.salary} onChange={handleChange} placeholder="e.g. $5k - $8k" style={inputS} />
+                                <input required type="text" name="salary" value={formData.salary} onChange={handleChange} placeholder="e.g. $5k - $8k" style={inputS} />
                             </div>
 
                             <div>
-                                <label style={labelS}>Assigned Branch</label>
-                                <select name="branchId" value={formData.branchId} onChange={handleChange} style={inputS}>
-                                    {branches.map(b => <option key={b}>{b}</option>)}
-                                </select>
+                                <label style={labelS}>Required Experience</label>
+                                <input required type="text" name="experience" value={formData.experience} onChange={handleChange} placeholder="e.g. 3+ Years" style={inputS} />
+                            </div>
+
+                            <div>
+                                <label style={labelS}>Required Degree</label>
+                                <input required type="text" name="degree" value={formData.degree} onChange={handleChange} placeholder="e.g. Bachelor's" style={inputS} />
+                            </div>
+
+                            <div>
+                                <label style={labelS}>Available Seats</label>
+                                <input required type="number" name="seats" value={formData.seats} onChange={handleChange} min="1" style={inputS} />
                             </div>
                         </div>
 
@@ -127,8 +180,8 @@ const PostJob = () => {
                         </div>
 
                         <div>
-                            <label style={labelS}>Key Requirements</label>
-                            <textarea required name="requirements" value={formData.requirements} onChange={handleChange} rows="4" placeholder="List technical and soft skill requirements..." style={{ ...inputS, resize: 'none' }}></textarea>
+                            <label style={labelS}>Key Responsibilities & Requirements</label>
+                            <textarea required name="requirements" value={formData.requirements} onChange={handleChange} rows="6" placeholder="List the requirements and responsibilities. Use new lines for bullet points." style={{ ...inputS, resize: 'none' }}></textarea>
                         </div>
 
                         <button

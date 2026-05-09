@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { STATUSES, getDynamicBranches, addBranch as addBranchToConstants } from "../../Constants";
+import { STATUSES } from "../../Constants";
+import { getAllApplicationsRequest, getAllJobsAdminRequest, getBranchesRequest, createBranchRequest, deleteJobRequest } from "../../api/api";
 
 const C = {
     bg: '#0F172A',
@@ -17,42 +18,61 @@ const HRDashboard = () => {
     const [activeTab, setActiveTab] = useState('applications');
     const [applications, setApplications] = useState([]);
     const [jobs, setJobs] = useState([]);
-    const [branches, setBranches] = useState(getDynamicBranches());
+    const [branches, setBranches] = useState([]);
     const [newBranchName, setNewBranchName] = useState("");
     const navigate = useNavigate();
 
-    useEffect(() => {
-        // Load data from localStorage
-        const allApps = JSON.parse(localStorage.getItem('all_applications')) || [];
-        setApplications(allApps);
+    const fetchData = async () => {
+        try {
+            const [appsRes, jobsRes, branchesRes] = await Promise.all([
+                getAllApplicationsRequest(),
+                getAllJobsAdminRequest(),
+                getBranchesRequest()
+            ]);
+            setApplications(appsRes.data?.data?.applications || []);
+            setJobs(jobsRes.data?.data?.jobs || []);
+            setBranches(branchesRes.data?.data?.branches || []);
+        } catch (err) {
+            console.error("Error fetching dashboard data:", err);
+            // Ignore 401/403, standard axios interceptor handles redirect
+        }
+    };
 
-        // For demo, we'll use a mix of hardcoded and localStorage jobs
-        // In a real app, this would come from a database
-        const storedJobs = JSON.parse(localStorage.getItem('managed_jobs')) || [];
-        setJobs(storedJobs);
+    useEffect(() => {
+        fetchData();
     }, []);
 
-    const handleAddBranch = (e) => {
+    const handleAddBranch = async (e) => {
         e.preventDefault();
         if (newBranchName.trim()) {
-            if (addBranchToConstants(newBranchName.trim())) {
-                setBranches(getDynamicBranches());
+            try {
+                await createBranchRequest({ branchName: newBranchName.trim() });
                 setNewBranchName("");
+                fetchData(); // Refresh branches
+            } catch (err) {
+                console.error("Failed to add branch", err);
+                alert(err.response?.data?.message || "Failed to create branch");
             }
         }
     };
 
-    const handleDeleteJob = (id) => {
-        const updated = jobs.filter(j => j.id !== id);
-        setJobs(updated);
-        localStorage.setItem('managed_jobs', JSON.stringify(updated));
+    const handleDeleteJob = async (id) => {
+        if (window.confirm("Are you sure you want to delete this job? This will fail if there are active applications.")) {
+            try {
+                await deleteJobRequest(id);
+                fetchData(); // Refresh jobs
+            } catch (err) {
+                console.error("Failed to delete job", err);
+                alert(err.response?.data?.message || "Cannot delete job. Close it instead.");
+            }
+        }
     };
 
     const stats = [
         { label: 'Total Apps', value: applications.length, color: C.primary },
-        { label: 'Shortlisted', value: applications.filter(a => a.status === 'Shortlisted').length, color: C.accent },
-        { label: 'Hired', value: applications.filter(a => a.status === 'Hired').length, color: '#F59E0B' },
-        { label: 'Interviews', value: applications.filter(a => a.status === 'Interview Scheduled').length, color: '#A855F7' }
+        { label: 'Shortlisted', value: applications.filter(a => a.status === 'shortlisted').length, color: C.accent },
+        { label: 'Accepted', value: applications.filter(a => a.status === 'accepted').length, color: '#F59E0B' },
+        { label: 'Pending', value: applications.filter(a => a.status === 'pending').length, color: '#A855F7' }
     ];
 
     return (
@@ -90,7 +110,7 @@ const HRDashboard = () => {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             style={{ background: 'none', border: 'none', color: activeTab === tab ? C.primary : C.muted, fontSize: '1.1rem', fontWeight: '700', cursor: 'pointer', position: 'relative', padding: '0.5rem 1rem', textTransform: 'capitalize', whiteSpace: 'nowrap' }}>
-                            {tab === 'applications' ? 'Applicants' : tab === 'jobs' ? 'Active Jobs' : 'Branches'}
+                            {tab === 'applications' ? 'Applicants' : tab === 'jobs' ? 'Active Jobs' : 'Cities'}
                             {activeTab === tab && <div style={{ position: 'absolute', bottom: '-1rem', left: 0, right: 0, height: '3px', background: C.primary, borderRadius: '2px' }} />}
                         </button>
                     ))}
@@ -112,28 +132,28 @@ const HRDashboard = () => {
                                 </thead>
                                 <tbody>
                                     {applications.length > 0 ? applications.map(app => (
-                                        <tr key={app.id} style={{ borderBottom: `1px solid ${C.border}` }}>
+                                        <tr key={app._id} style={{ borderBottom: `1px solid ${C.border}` }}>
                                             <td style={tdS}>
-                                                <div style={{ fontWeight: '700' }}>{app.candidate}</div>
-                                                <div style={{ fontSize: '0.75rem', color: C.muted }}>{app.email}</div>
+                                                <div style={{ fontWeight: '700' }}>{app.candidateName || app.userId?.name}</div>
+                                                <div style={{ fontSize: '0.75rem', color: C.muted }}>{app.candidateEmail || app.userId?.email}</div>
                                             </td>
                                             <td style={tdS}>
-                                                <div style={{ fontWeight: '600' }}>{app.title}</div>
-                                                <div style={{ fontSize: '0.75rem', color: C.primary }}>{app.company}</div>
+                                                <div style={{ fontWeight: '600' }}>{app.jobId?.title}</div>
+                                                <div style={{ fontSize: '0.75rem', color: C.primary }}>{app.jobId?.branchId?.branchName || "Global"}</div>
                                             </td>
-                                            <td style={tdS}>{app.date}</td>
+                                            <td style={tdS}>{new Date(app.createdAt).toLocaleDateString()}</td>
                                             <td style={tdS}>
                                                 <span style={{
                                                     padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase',
-                                                    background: app.status === 'Shortlisted' ? 'rgba(34,197,94,0.1)' : app.status === 'Rejected' ? 'rgba(239,68,68,0.1)' : app.status === 'Hired' ? 'rgba(245,158,11,0.1)' : 'rgba(59,130,246,0.1)',
-                                                    color: app.status === 'Shortlisted' ? C.accent : app.status === 'Rejected' ? C.error : app.status === 'Hired' ? '#F59E0B' : C.primary
+                                                    background: app.status === 'shortlisted' ? 'rgba(34,197,94,0.1)' : app.status === 'rejected' ? 'rgba(239,68,68,0.1)' : app.status === 'accepted' ? 'rgba(245,158,11,0.1)' : 'rgba(59,130,246,0.1)',
+                                                    color: app.status === 'shortlisted' ? C.accent : app.status === 'rejected' ? C.error : app.status === 'accepted' ? '#F59E0B' : C.primary
                                                 }}>
                                                     {app.status}
                                                 </span>
                                             </td>
                                             <td style={tdS}>
                                                 <button
-                                                    onClick={() => navigate(`/view-application/${app.id}`)}
+                                                    onClick={() => navigate(`/view-application/${app._id}`)}
                                                     style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: C.text, padding: '0.6rem 1.2rem', borderRadius: '8px', fontSize: '0.85rem', fontWeight: '700', cursor: 'pointer', transition: '0.2s' }}
                                                     onMouseEnter={e => e.target.style.background = 'rgba(255,255,255,0.1)'}
                                                     onMouseLeave={e => e.target.style.background = 'rgba(255,255,255,0.05)'}>
@@ -155,7 +175,7 @@ const HRDashboard = () => {
                                 <thead>
                                     <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
                                         <th style={thS}>Job Title</th>
-                                        <th style={thS}>Branch</th>
+                                        <th style={thS}>City</th>
                                         <th style={thS}>Apps</th>
                                         <th style={thS}>Type</th>
                                         <th style={thS}>Actions</th>
@@ -163,15 +183,15 @@ const HRDashboard = () => {
                                 </thead>
                                 <tbody>
                                     {jobs.length > 0 ? jobs.map(job => (
-                                        <tr key={job.id} style={{ borderBottom: `1px solid ${C.border}` }}>
+                                        <tr key={job._id} style={{ borderBottom: `1px solid ${C.border}` }}>
                                             <td style={tdS}><div style={{ fontWeight: '700' }}>{job.title}</div></td>
-                                            <td style={tdS}>{job.branch || 'Global'}</td>
-                                            <td style={tdS}>{applications.filter(a => a.jobId === job.id).length}</td>
+                                            <td style={tdS}>{job.branchId?.branchName || 'Global'}</td>
+                                            <td style={tdS}>{applications.filter(a => a.jobId?._id === job._id).length}</td>
                                             <td style={tdS}>{job.type}</td>
                                             <td style={tdS}>
                                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                    <button onClick={() => navigate(`/post-job/${job.id}`)} style={actionBtnS(C.primary)}>Edit</button>
-                                                    <button onClick={() => handleDeleteJob(job.id)} style={actionBtnS(C.error)}>Delete</button>
+                                                    <button onClick={() => navigate(`/post-job/${job._id}`)} style={actionBtnS(C.primary)}>Edit</button>
+                                                    <button onClick={() => handleDeleteJob(job._id)} style={actionBtnS(C.error)}>Delete</button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -186,25 +206,28 @@ const HRDashboard = () => {
                     ) : (
                         <div className="p-6 md:p-12">
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
-                                <h3 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Manage Operating Branches</h3>
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Manage Operating Cities</h3>
                                 <form onSubmit={handleAddBranch} className="flex flex-col sm:flex-row w-full md:w-auto gap-4">
                                     <input
                                         type="text"
+                                        required
                                         value={newBranchName}
                                         onChange={(e) => setNewBranchName(e.target.value)}
-                                        placeholder="Enter branch name..."
+                                        placeholder="City Name..."
                                         style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '0.75rem 1rem', color: C.text, outline: 'none' }}
                                     />
                                     <button type="submit" className="w-full sm:w-auto" style={{ background: C.accent, color: '#fff', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>
-                                        Add Branch
+                                        Add City
                                     </button>
                                 </form>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
                                 {branches.map(b => (
-                                    <div key={b} style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${C.border}`, padding: '1rem', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontWeight: '600' }}>{b}</span>
-                                        <span style={{ color: C.primary, fontSize: '0.8rem', fontWeight: '800' }}>ACTIVE</span>
+                                    <div key={b._id} style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${C.border}`, padding: '1.25rem', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontWeight: '800', fontSize: '1.1rem' }}>{b.branchName}</span>
+                                            <span style={{ color: C.primary, fontSize: '0.7rem', fontWeight: '800', padding: '0.2rem 0.5rem', background: 'rgba(59,130,246,0.1)', borderRadius: '4px' }}>ACTIVE</span>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -212,6 +235,9 @@ const HRDashboard = () => {
                     )}
                 </div>
             </div>
+            <style>{`
+                .glass-card { background: ${C.card}; border: 1px solid ${C.border}; box-shadow: 0 10px 30px rgba(0,0,0,0.1); backdrop-filter: blur(10px); }
+            `}</style>
         </div>
     );
 };

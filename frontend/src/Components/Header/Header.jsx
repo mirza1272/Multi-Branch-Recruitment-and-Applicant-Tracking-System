@@ -8,9 +8,9 @@ function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
 
-    const navItems = [];
+    const navItems = ['Home'];
     if (isLoggedIn) {
-        if (user?.role === 'HR') {
+        if (user?.role === 'recruiter' || user?.role === 'admin') {
             navItems.push('Dashboard');
         } else {
             navItems.push('Jobs', 'Applications');
@@ -60,11 +60,12 @@ function Header() {
                     <nav className="hidden md:flex items-center" style={{ gap: '2rem' }}>
                         {navItems.map((item) => (
                             <Link key={item} to={
-                                item === 'Jobs' ? '/jobs' :
-                                    item === 'Applications' ? '/applications' :
-                                        item === 'Dashboard' ? '/hr-dashboard' :
-                                            item === 'About Us' ? '/about-us' :
-                                                item === 'Contact Us' ? '/contact-us' : '#'
+                                item === 'Home' ? '/' :
+                                    item === 'Jobs' ? '/jobs' :
+                                        item === 'Applications' ? '/applications' :
+                                            item === 'Dashboard' ? '/hr-dashboard' :
+                                                item === 'About Us' ? '/about-us' :
+                                                    item === 'Contact Us' ? '/contact-us' : '#'
                             }
                                 className="text-sm font-medium transition-all duration-200 relative group"
                                 style={{ color: '#6B7280', textDecoration: 'none' }}
@@ -134,6 +135,7 @@ function Header() {
                 <div className="md:hidden" style={{ background: '#1E293B', borderBottom: '1px solid #334155', borderTop: '1px solid #334155', position: 'absolute', width: '100%', left: 0, top: '100%', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
                     {navItems.map((item) => (
                         <Link key={item} to={
+                        item === 'Home' ? '/' :
                             item === 'Jobs' ? '/jobs' :
                                 item === 'Applications' ? '/applications' :
                                     item === 'Dashboard' ? '/hr-dashboard' :

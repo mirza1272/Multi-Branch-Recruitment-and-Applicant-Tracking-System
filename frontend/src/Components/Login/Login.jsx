@@ -42,7 +42,7 @@ function Login() {
             if (user.role === 'admin' || user.role === 'recruiter') {
                 navigate('/hr-dashboard');
             } else {
-                navigate('/jobs');
+                navigate('/');
             }
         } catch (err) {
             console.error(err);
@@ -72,7 +72,7 @@ function Login() {
                             <span style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: C.primary }}><MailIcon /></span>
                             <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" style={iStyle}
                                 onFocus={e => { e.target.style.borderColor = C.primary; e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.1)'; e.target.style.background = C.card; }}
-                                onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none'; e.target.style.background = '#F9FAFB'; }} />
+                                onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none'; e.target.style.background = '#0F172A'; }} />
                         </div>
                     </div>
                     <div>
@@ -84,7 +84,7 @@ function Login() {
                             <span style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: C.primary }}><LockIcon /></span>
                             <input type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" style={iStyle}
                                 onFocus={e => { e.target.style.borderColor = C.primary; e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.1)'; e.target.style.background = C.card; }}
-                                onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none'; e.target.style.background = '#F9FAFB'; }} />
+                                onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none'; e.target.style.background = '#0F172A'; }} />
                         </div>
                     </div>
                     <button type="submit" className="btn-primary" style={{ width: '100%', padding: '0.75rem', marginTop: '0.25rem' }} disabled={isLoading}>

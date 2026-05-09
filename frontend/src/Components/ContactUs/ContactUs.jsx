@@ -17,7 +17,7 @@ const ContactInfoItem = ({ icon, label, val }) => (
 function ContactUs() {
     const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", message: "" });
     const user = JSON.parse(localStorage.getItem('user'));
-    const isHR = user?.role === 'HR';
+    const isHR = user?.role === 'recruiter' || user?.role === 'admin';
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);

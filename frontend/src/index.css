@@ -156,6 +156,16 @@
         border-color: #3B82F6;
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
     }
+
+    /* Override browser autofill background for all inputs */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus, 
+    input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px #0F172A inset !important;
+        -webkit-text-fill-color: #F1F5F9 !important;
+        transition: background-color 5000s ease-in-out 0s !important;
+    }
 }
 
 @layer utilities {

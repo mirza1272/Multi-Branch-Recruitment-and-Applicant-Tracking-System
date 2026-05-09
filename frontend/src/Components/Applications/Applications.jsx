@@ -1,17 +1,21 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { STATUSES } from "../../Constants";
+import { getMyApplicationsRequest, getAllApplicationsRequest, updateApplicationStatusRequest } from "../../api/api";
 
 const C = { bg: '#0F172A', card: '#1E293B', primary: '#3B82F6', text: '#F1F5F9', muted: '#94A3B8', border: '#334155', accent: '#2DD4BF', warning: '#F59E0B', danger: '#EF4444' };
 
 // Generic Status Badge component
 const StatusBadge = ({ status }) => {
     const getStyles = () => {
-        switch (status) {
-            case 'Shortlisted': return { bg: 'rgba(45,212,191,0.1)', color: C.accent };
-            case 'Rejected': return { bg: 'rgba(239,68,68,0.1)', color: C.danger };
-            case 'Hired': return { bg: 'rgba(245,158,11,0.1)', color: C.warning };
-            default: return { bg: 'rgba(59,130,246,0.1)', color: C.primary };
+        const s = status?.toLowerCase();
+        switch (s) {
+            case 'shortlisted': return { bg: 'rgba(45,212,191,0.1)', color: C.accent, label: 'Shortlisted' };
+            case 'rejected': return { bg: 'rgba(239,68,68,0.1)', color: C.danger, label: 'Rejected' };
+            case 'accepted': return { bg: 'rgba(34,197,94,0.1)', color: '#22C55E', label: 'Accepted' };
+            case 'pending': return { bg: 'rgba(245,158,11,0.1)', color: C.warning, label: 'Pending' };
+            case 'interview scheduled': return { bg: 'rgba(139,92,246,0.1)', color: '#8B5CF6', label: 'Interview Scheduled' };
+            default: return { bg: 'rgba(59,130,246,0.1)', color: C.primary, label: status };
         }
     };
     const s = getStyles();
@@ -20,7 +24,7 @@ const StatusBadge = ({ status }) => {
             padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase',
             background: s.bg, color: s.color
         }}>
-            {status}
+            {s.label}
         </span>
     );
 };
@@ -31,47 +35,58 @@ function Applications() {
     }, []);
     const navigate = useNavigate();
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
-    const isHR = user?.role === 'HR';
+    const isHR = user?.role === 'recruiter' || user?.role === 'admin';
 
     const [applications, setApplications] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState("All");
     const [loading, setLoading] = useState(true);
 
-    // This effect simulates an API call and can be easily replaced with axios/fetch
     useEffect(() => {
-        setLoading(true);
-        // MOCK API CALL
-        setTimeout(() => {
-            const savedApps = JSON.parse(localStorage.getItem('all_applications')) || [];
-
-            // Filter saved apps: Candidates only see their own, HR sees all
-            const filteredSaved = isHR
-                ? savedApps
-                : savedApps.filter(app => app.email === user?.email);
-
-            setApplications(filteredSaved);
-            setLoading(false);
-        }, 800);
-    }, [isHR, user?.email]);
+        const fetchApplications = async () => {
+            try {
+                setLoading(true);
+                const response = isHR 
+                    ? await getAllApplicationsRequest() 
+                    : await getMyApplicationsRequest();
+                
+                const apps = response.data?.data?.applications || response.data?.data || [];
+                setApplications(apps);
+            } catch (err) {
+                console.error("Failed to fetch applications:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchApplications();
+    }, [isHR]);
 
     const filteredApps = useMemo(() => {
         return applications.filter(app => {
-            const targetField = isHR ? (app.candidate || "") : (app.title || "");
-            const matchesSearch = targetField.toLowerCase().includes(searchTerm.toLowerCase()) || (app.company || "").toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesFilter = filterStatus === "All" || app.status === filterStatus;
+            const jobTitle = app.jobId?.title || "";
+            const candidateName = app.candidateName || app.userId?.name || "";
+            const company = app.jobId?.company || "";
+            
+            const targetField = isHR ? candidateName : jobTitle;
+            const matchesSearch = targetField.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                company.toLowerCase().includes(searchTerm.toLowerCase());
+            
+            const matchesFilter = filterStatus === "All" || 
+                                app.status.toLowerCase() === filterStatus.toLowerCase();
             return matchesSearch && matchesFilter;
         });
     }, [applications, searchTerm, filterStatus, isHR]);
 
-    const handleStatusChange = (appId, newStatus) => {
-        // Update state
-        setApplications(prev => prev.map(app => app.id === appId ? { ...app, status: newStatus } : app));
-
-        // Persist to localStorage if it's a saved application
-        const savedApps = JSON.parse(localStorage.getItem('all_applications')) || [];
-        const updatedSaved = savedApps.map(app => app.id === appId ? { ...app, status: newStatus } : app);
-        localStorage.setItem('all_applications', JSON.stringify(updatedSaved));
+    const handleStatusChange = async (appId, newStatus) => {
+        try {
+            await updateApplicationStatusRequest(appId, { status: newStatus });
+            setApplications(prev => prev.map(app => 
+                (app._id === appId || app.id === appId) ? { ...app, status: newStatus } : app
+            ));
+        } catch (err) {
+            console.error("Failed to update application status:", err);
+            alert("Failed to update status. Please try again.");
+        }
     };
 
     if (loading) return (
@@ -144,47 +159,76 @@ function Applications() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredApps.map((app, idx) => (
-                                        <tr key={app.id} style={{ borderBottom: idx !== filteredApps.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                                    {filteredApps.map((app, idx) => {
+                                        const id = app._id || app.id;
+                                        const jobTitle = app.jobId?.title || "Unknown Job";
+                                        const candidateName = app.candidateName || app.userId?.name || "Unknown Candidate";
+                                        const initial = isHR ? candidateName[0] : jobTitle[0];
+                                        
+                                        return (
+                                        <tr key={id} style={{ borderBottom: idx !== filteredApps.length - 1 ? `1px solid ${C.border}` : 'none' }}>
                                             <td style={tdS}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                     <div style={{ width: '40px', height: '40px', background: 'rgba(59,130,246,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.primary, fontWeight: '800' }}>
-                                                        {isHR ? app.candidate[0] : app.title[0]}
+                                                        {initial?.toUpperCase()}
                                                     </div>
                                                     <div>
-                                                        <p style={{ fontWeight: '700', fontSize: '0.95rem' }}>{isHR ? app.candidate : app.title}</p>
-                                                        {isHR && <p style={{ fontSize: '0.75rem', color: C.muted }}>Applying for: {app.title}</p>}
+                                                        <p style={{ fontWeight: '700', fontSize: '0.95rem' }}>{isHR ? candidateName : jobTitle}</p>
+                                                        {isHR && <p style={{ fontSize: '0.75rem', color: C.muted }}>Applying for: {jobTitle}</p>}
                                                     </div>
                                                 </div>
                                             </td>
                                             <td style={tdS}>
-                                                <p style={{ fontSize: '0.9rem', fontWeight: '600' }}>{app.company}</p>
-                                                <p style={{ fontSize: '0.75rem', color: C.muted }}>{app.type}</p>
+                                                <p style={{ fontSize: '0.9rem', fontWeight: '600' }}>{app.jobId?.company || "N/A"}</p>
+                                                <p style={{ fontSize: '0.75rem', color: C.muted }}>{app.jobId?.type || "N/A"}</p>
                                             </td>
                                             <td style={tdS}>
-                                                <p style={{ fontSize: '0.85rem', color: C.muted }}>{app.date}</p>
+                                                <p style={{ fontSize: '0.85rem', color: C.muted }}>{new Date(app.createdAt).toLocaleDateString()}</p>
                                             </td>
                                             <td style={tdS}>
-                                                <p style={{ fontSize: '0.85rem', color: C.muted }}>{app.branch}</p>
+                                                <p style={{ fontSize: '0.85rem', color: C.muted }}>{app.jobId?.branchId?.branchName || "N/A"}</p>
                                             </td>
                                             <td style={tdS}>
                                                 <StatusBadge status={app.status} />
                                             </td>
                                             <td style={tdS}>
                                                 {isHR ? (
-                                                    <select
-                                                        value={app.status}
-                                                        onChange={(e) => handleStatusChange(app.id, e.target.value)}
-                                                        style={{ background: C.bg, border: `1px solid ${C.border}`, color: C.text, padding: '0.4rem', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}
-                                                    >
-                                                        {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                                                    </select>
+                                                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                        <select
+                                                            value={app.status}
+                                                            onChange={(e) => handleStatusChange(id, e.target.value)}
+                                                            style={{ background: C.bg, border: `1px solid ${C.border}`, color: C.text, padding: '0.4rem', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', textTransform: 'capitalize' }}
+                                                        >
+                                                            {STATUSES.map(s => <option key={s} value={s.toLowerCase()}>{s}</option>)}
+                                                        </select>
+                                                        <button 
+                                                            onClick={() => navigate(`/view-application/${id}`)}
+                                                            style={{ background: 'rgba(59,130,246,0.1)', border: 'none', color: C.primary, padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}>
+                                                            View
+                                                        </button>
+                                                    </div>
                                                 ) : (
-                                                    <button onClick={() => navigate(`/job-details/${app.jobId}`)} style={{ background: 'transparent', border: `1px solid ${C.primary}`, color: C.primary, padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}>View Job</button>
+                                                    <button 
+                                                        onClick={() => {
+                                                            // Most robust ID retrieval
+                                                            const jobObj = app.jobId;
+                                                            const targetId = jobObj?._id || jobObj?.id || (typeof jobObj === 'string' ? jobObj : null);
+                                                            
+                                                            if (targetId) {
+                                                                navigate(`/job-details/${targetId}`);
+                                                            } else {
+                                                                console.error("DEBUG: Application Job Data:", jobObj);
+                                                                alert(`Job details reference missing. Please contact support. (Ref: ${app._id || app.id})`);
+                                                            }
+                                                        }} 
+                                                        style={{ background: 'transparent', border: `1px solid ${C.primary}`, color: C.primary, padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
+                                                    >
+                                                        View Job
+                                                    </button>
                                                 )}
                                             </td>
                                         </tr>
-                                    ))}
+                                    );})}
                                 </tbody>
                             </table>
                         </div>

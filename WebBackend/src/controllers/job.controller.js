@@ -16,7 +16,7 @@ export const createJob = asyncHandler(async (req, res) => {
     title,
     company,
     description,
-    location,
+    requirements,
     department,
     category,
     type,
@@ -30,7 +30,7 @@ export const createJob = asyncHandler(async (req, res) => {
   // ─────────────────────────────────────────────
   // Validation
   // ─────────────────────────────────────────────
-  const requiredFields = ["branchId", "title", "description", "location", "department", "category", "type", "experience", "degree"];
+  const requiredFields = ["branchId", "title", "description", "department", "category", "type", "experience", "degree"];
   const missingFields = requiredFields.filter((field) => !req.body[field]);
 
   if (missingFields.length > 0) {
@@ -58,12 +58,19 @@ export const createJob = asyncHandler(async (req, res) => {
   // ─────────────────────────────────────────────
   // Create Job
   // ─────────────────────────────────────────────
+  
+  // If company is not provided, use the recruiter's company from their profile
+  let finalCompany = company ? company.trim() : null;
+  if (!finalCompany && req.user.company) {
+    finalCompany = req.user.company;
+  }
+
   const jobData = {
     branchId,
     title: title.trim(),
-    company: company ? company.trim() : null,
+    company: finalCompany,
     description: description.trim(),
-    location: location.trim(),
+    requirements: requirements ? requirements.trim() : null,
     department: department.trim(),
     category,
     type,
@@ -194,6 +201,11 @@ export const getAllJobsAdmin = asyncHandler(async (req, res) => {
   const { branchId, status, page = 1, limit = 20 } = req.query;
 
   const filter = {};
+
+  // Recruiters should only see their own jobs
+  if (req.user.role === "recruiter") {
+    filter.createdBy = req.user._id;
+  }
 
   if (branchId) {
     filter.branchId = branchId;
@@ -380,7 +392,7 @@ export const updateJob = asyncHandler(async (req, res) => {
     "title",
     "company",
     "description",
-    "location",
+    "requirements",
     "department",
     "category",
     "type",
@@ -493,6 +505,11 @@ export const getJobStats = asyncHandler(async (req, res) => {
   const { branchId } = req.query;
 
   const filter = branchId ? { branchId } : {};
+
+  // Recruiters should only see their own job stats
+  if (req.user.role === "recruiter") {
+    filter.createdBy = req.user._id;
+  }
 
   const [total, openJobs, closedJobs, pausedJobs] = await Promise.all([
     Job.countDocuments(filter),

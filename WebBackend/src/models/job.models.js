@@ -52,9 +52,8 @@ const jobSchema = new mongoose.Schema(
       required: [true, "Job description is required"],
       trim: true,
     },
-    location: {
+    requirements: {
       type: String,
-      required: [true, "Location is required"],
       trim: true,
     },
 
@@ -145,20 +144,15 @@ jobSchema.index({ createdAt: -1 });
 // ─────────────────────────────────────────────
 // Pre-save Hook: Auto-generate jobId
 // ─────────────────────────────────────────────
-jobSchema.pre("save", async function (next) {
+jobSchema.pre("save", async function () {
   if (!this.jobId) {
-    try {
-      const counter = await Counter.findByIdAndUpdate(
-        "jobId",
-        { $inc: { sequence: 1 } },
-        { new: true, upsert: true }
-      );
-      this.jobId = `JOB-${counter.sequence}`;
-    } catch (error) {
-      next(error);
-    }
+    const counter = await Counter.findByIdAndUpdate(
+      "jobId",
+      { $inc: { sequence: 1 } },
+      { new: true, upsert: true }
+    );
+    this.jobId = `JOB-${counter.sequence}`;
   }
-  next();
 });
 
 // ─────────────────────────────────────────────
@@ -171,7 +165,7 @@ jobSchema.methods.toJSON = function () {
     title: obj.title,
     company: obj.company,
     description: obj.description,
-    location: obj.location,
+    requirements: obj.requirements,
     department: obj.department,
     category: obj.category,
     type: obj.type,

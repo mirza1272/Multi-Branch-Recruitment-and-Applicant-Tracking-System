@@ -49,11 +49,15 @@ export const getMeRequest = () => api.get("/auth/me");
 export const updateProfileRequest = (payload) => api.patch("/auth/me", payload);
 
 export const getJobsRequest = (params) => api.get("/jobs", { params });
+export const getAllJobsAdminRequest = (params) => api.get("/jobs/admin/all", { params });
+export const getJobStatsAdminRequest = (params) => api.get("/jobs/admin/stats/dashboard", { params });
 export const getJobByIdRequest = (jobId) => api.get(`/jobs/${jobId}`);
 export const createJobRequest = (payload) => api.post("/jobs", payload);
 export const updateJobRequest = (jobId, payload) => api.patch(`/jobs/${jobId}`, payload);
+export const deleteJobRequest = (jobId) => api.delete(`/jobs/${jobId}`);
 
 export const getBranchesRequest = () => api.get("/branches");
+export const createBranchRequest = (payload) => api.post("/branches", payload);
 
 export const applyForJobRequest = (formData) =>
   api.post("/applications", formData, {

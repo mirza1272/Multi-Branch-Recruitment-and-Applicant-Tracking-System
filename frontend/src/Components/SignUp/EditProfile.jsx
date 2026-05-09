@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { updateProfileRequest } from "../../api/api";
 
 const C = { bg: '#0F172A', card: '#1E293B', primary: '#3B82F6', text: '#F1F5F9', muted: '#94A3B8', border: '#334155', accent: '#22C55E' };
 
@@ -27,19 +28,30 @@ function EditProfile() {
     });
     const [isSuccess, setIsSuccess] = useState(false);
 
-    const handleSave = (e) => {
+    const handleSave = async (e) => {
         e.preventDefault();
 
         if (formData.email !== formData.initialEmail) {
             navigate('/verify-user', { state: { userData: formData } });
         } else {
-            localStorage.setItem('user', JSON.stringify(formData));
-            window.dispatchEvent(new Event('auth-change'));
-            setIsSuccess(true);
-            setTimeout(() => {
-                setIsSuccess(false);
-                navigate('/');
-            }, 2000);
+            try {
+                const res = await updateProfileRequest(formData);
+                const updatedUser = res.data?.data?.user;
+                if (updatedUser) {
+                    localStorage.setItem('user', JSON.stringify(updatedUser));
+                } else {
+                    localStorage.setItem('user', JSON.stringify(formData));
+                }
+                window.dispatchEvent(new Event('auth-change'));
+                setIsSuccess(true);
+                setTimeout(() => {
+                    setIsSuccess(false);
+                    navigate('/profile');
+                }, 2000);
+            } catch (err) {
+                console.error("Failed to update profile", err);
+                alert(err.response?.data?.message || "Failed to update profile");
+            }
         }
     };
 
@@ -114,13 +126,13 @@ function EditProfile() {
 
                     <div>
                         <label style={{ fontSize: '0.85rem', fontWeight: '700', color: C.text, display: 'block', marginBottom: '0.6rem' }}>
-                            {formData.role === 'Candidate' ? 'Skills' : 'Company Name'}
+                            {formData.role === 'candidate' ? 'Skills' : 'Company Name'}
                         </label>
                         <div style={{ position: 'relative' }}>
                             <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: C.primary }}><BriefcaseIcon /></span>
                             <input type="text" required
-                                value={formData.role === 'Candidate' ? formData.skills : formData.company}
-                                onChange={e => formData.role === 'Candidate' ? setFormData({ ...formData, skills: e.target.value }) : setFormData({ ...formData, company: e.target.value })}
+                                value={formData.role === 'candidate' ? formData.skills : formData.company}
+                                onChange={e => formData.role === 'candidate' ? setFormData({ ...formData, skills: e.target.value }) : setFormData({ ...formData, company: e.target.value })}
                                 style={inputS}
                                 onFocus={e => { e.target.style.borderColor = C.primary; e.target.style.boxShadow = '0 0 0 4px rgba(59,130,246,0.15)'; e.target.style.background = C.card; }}
                                 onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none'; e.target.style.background = C.bg; }} />

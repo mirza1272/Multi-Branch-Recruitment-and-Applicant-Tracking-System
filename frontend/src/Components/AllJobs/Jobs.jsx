@@ -39,12 +39,7 @@ function Jobs() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (user?.role === 'HR') {
-            navigate('/hr-dashboard');
-        }
-    }, [navigate]);
+    // Removed HR redirect so recruiters can view the jobs board
 
     // Fetch branches on component mount
     useEffect(() => {
@@ -208,7 +203,7 @@ function Jobs() {
                                             { icon: <BriefcaseIcon />, text: job.category },
                                             { icon: <ClockIcon />, text: job.type },
                                             { icon: <DollarIcon />, text: job.salary ? `$${job.salary}` : 'Not specified' },
-                                            { icon: <MapPinIcon />, text: job.location },
+                                            { icon: <MapPinIcon />, text: job.branchId?.branchName || "Not specified" },
                                             { icon: <SearchIcon />, text: `${job.seats} Seats` },
                                         ].map((tag, idx) => (
                                             <span key={idx} className="tag-pill">

@@ -33,7 +33,7 @@ function AboutUs() {
     }, []);
     const [openFAQ, setOpenFAQ] = useState(0);
     const user = JSON.parse(localStorage.getItem('user'));
-    const isHR = user?.role === 'HR';
+    const isHR = user?.role === 'recruiter' || user?.role === 'admin';
 
     // Intersection Observer for scroll reveal
     React.useEffect(() => {

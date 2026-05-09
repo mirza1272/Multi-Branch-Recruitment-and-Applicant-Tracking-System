@@ -58,7 +58,7 @@ function VerifyUser() {
                 console.log('✅ Token saved to localStorage');
             }
             window.dispatchEvent(new Event('auth-change'));
-            navigate('/jobs');
+            navigate('/');
         } catch (err) {
             setError(err.response?.data?.message || err.message || 'Unable to verify OTP.');
         } finally {

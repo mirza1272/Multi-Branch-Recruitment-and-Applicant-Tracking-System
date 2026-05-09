@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { getMeRequest } from "../../api/api";
 
 const C = { bg: '#0F172A', card: '#1E293B', primary: '#3B82F6', text: '#F1F5F9', muted: '#94A3B8', border: '#334155', accent: '#22C55E' };
 
@@ -15,12 +16,27 @@ function Profile() {
     const [user, setUser] = useState(null);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        } else {
-            navigate('/login');
-        }
+        const fetchUserData = async () => {
+            try {
+                // Try to get from API for fresh data
+                const response = await getMeRequest();
+                const freshUser = response.data?.data?.user;
+                if (freshUser) {
+                    setUser(freshUser);
+                    localStorage.setItem('user', JSON.stringify(freshUser));
+                }
+            } catch (err) {
+                console.error("Failed to fetch fresh user data:", err);
+                // Fallback to localStorage if API fails
+                const storedUser = localStorage.getItem('user');
+                if (storedUser) {
+                    setUser(JSON.parse(storedUser));
+                } else {
+                    navigate('/login');
+                }
+            }
+        };
+        fetchUserData();
     }, [navigate]);
 
     if (!user) return null;
@@ -44,7 +60,11 @@ function Profile() {
                                     {user.role}
                                 </span>
                             </div>
-                            <p style={{ color: C.muted, fontSize: '1.05rem', maxWidth: '500px', lineHeight: 1.6 }}>{user.bio || "No professional bio added yet. Tell people about your expertise!"}</p>
+                            {user.role === 'candidate' && (
+                                <p style={{ color: C.muted, fontSize: '1.05rem', maxWidth: '500px', lineHeight: 1.6 }}>
+                                    {user.bio || "No professional bio added yet. Tell people about your expertise!"}
+                                </p>
+                            )}
                         </div>
                         <button onClick={() => navigate('/edit-profile')} className="btn-primary" style={{ padding: '0.8rem 1.75rem', borderRadius: '12px', fontSize: '0.95rem', fontWeight: '700' }}>
                             Edit Profile
@@ -95,10 +115,10 @@ function Profile() {
                                 <div style={{ color: C.muted }}><BriefcaseIcon /></div>
                                 <div>
                                     <p style={{ fontSize: '0.75rem', color: C.muted, marginBottom: '0.1rem' }}>
-                                        {user.role === 'Candidate' ? 'Skills & Expertise' : 'Associated Company'}
+                                        {user.role === 'candidate' ? 'Skills & Expertise' : 'Associated Company'}
                                     </p>
                                     <p style={{ fontSize: '0.95rem', color: C.text, fontWeight: '600' }}>
-                                        {user.role === 'Candidate' ? (user.skills || "Add your skills") : (user.company || "Add company details")}
+                                        {user.role === 'candidate' ? (user.skills || "Add your skills") : (user.company || "Add company details")}
                                     </p>
                                 </div>
                             </div>
@@ -120,7 +140,7 @@ function Profile() {
 
                 <div style={{ textAlign: 'center', marginTop: '3rem' }}>
                     <Link to="/" style={{ color: C.muted, textDecoration: 'none', fontSize: '0.9rem', fontWeight: '600', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = C.primary} onMouseLeave={e => e.target.style.color = C.muted}>
-                        Back to Job Listings
+                        Back to Home Page
                     </Link>
                 </div>
 

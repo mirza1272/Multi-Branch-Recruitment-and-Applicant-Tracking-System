@@ -17,7 +17,7 @@ import AboutUs from './Components/AboutUs/AboutUs';
 import ContactUs from './Components/ContactUs/ContactUs';
 import TermsPolicies from './Components/Terms_and_Polices/Terms_policies';
 import HRDashboard from './Components/Dashboard/HRDashboard';
-import ViewCandidateApp from './Components/Dashboard/viewcandidateapp';
+import ViewCandidateApp from './Components/Dashboard/Viewcandidateapp';
 import PostJob from './Components/Dashboard/PostJob';
 
 export { Login, Header, Footer, Home, Jobs, ForgetPass, ForgetPin, Passchange, SignUp, VerifyUser, EditProfile, Profile, JobDetails, ApplyJob, Applications, AboutUs, ContactUs, TermsPolicies, HRDashboard, ViewCandidateApp, PostJob };

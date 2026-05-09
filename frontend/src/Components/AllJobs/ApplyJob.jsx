@@ -75,6 +75,12 @@ function ApplyJob() {
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (!storedUser) {
+            navigate('/signup');
+            return;
+        }
+
         window.scrollTo(0, 0);
 
         // Fetch job details
@@ -95,7 +101,6 @@ function ApplyJob() {
         fetchJob();
 
         // Auto-fill if user is logged in
-        const storedUser = localStorage.getItem('user');
         if (storedUser) {
             const user = JSON.parse(storedUser);
             const names = user.name ? user.name.split(' ') : ["", ""];
@@ -107,7 +112,7 @@ function ApplyJob() {
                 phone: user.phone || "",
                 location: user.location || "",
                 skills: user.skills || "",
-                currentCompany: user.role === 'HR' ? user.name : user.company || ""
+                currentCompany: (user.role === 'recruiter' || user.role === 'admin') ? user.name : user.company || ""
             }));
         }
     }, [id]);

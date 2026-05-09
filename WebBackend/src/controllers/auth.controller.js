@@ -16,7 +16,7 @@ export const register = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Request body is required");
   }
 
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, phone, location, skills, company, bio } = req.body;
 
   if (!name || !email || !password) {
     throw new ApiError(400, "Name, email, and password are required");
@@ -27,8 +27,7 @@ export const register = asyncHandler(async (req, res) => {
     throw new ApiError(409, "An account with this email already exists");
   }
 
-  // Only allow 'candidate' self-registration. admin/recruiter set by admin.
-  const safeRole = role === "candidate" ? "candidate" : "candidate";
+  const safeRole = role === "recruiter" ? "recruiter" : "candidate";
   const otp = generateOtp();
   const otpExpiresAt = Date.now() + 15 * 60 * 1000;
 
@@ -37,6 +36,11 @@ export const register = asyncHandler(async (req, res) => {
     email,
     password,
     role: safeRole,
+    phone,
+    location,
+    skills,
+    company,
+    bio,
     otpCode: otp,
     otpExpiresAt,
     isVerified: false,
@@ -88,7 +92,7 @@ export const login = asyncHandler(async (req, res) => {
 
   return res.status(200).json(
     new ApiResponse(200, {
-      user: { _id: user._id, name: user.name, email: user.email, role: user.role },
+      user: { _id: user._id, name: user.name, email: user.email, role: user.role, phone: user.phone, location: user.location, skills: user.skills, company: user.company, bio: user.bio },
       token,
     }, "Login successful")
   );
@@ -130,7 +134,7 @@ export const verifyOtp = asyncHandler(async (req, res) => {
 
   return res.status(200).json(
     new ApiResponse(200, {
-      user: { _id: user._id, name: user.name, email: user.email, role: user.role },
+      user: { _id: user._id, name: user.name, email: user.email, role: user.role, phone: user.phone, location: user.location, skills: user.skills, company: user.company, bio: user.bio },
       token,
     }, "Email verified successfully")
   );
@@ -209,6 +213,11 @@ export const updateProfile = asyncHandler(async (req, res) => {
     if (existing) throw new ApiError(409, "Email already in use by another account");
     updates.email = email;
   }
+  if (req.body.phone !== undefined) updates.phone = req.body.phone;
+  if (req.body.location !== undefined) updates.location = req.body.location;
+  if (req.body.skills !== undefined) updates.skills = req.body.skills;
+  if (req.body.company !== undefined) updates.company = req.body.company;
+  if (req.body.bio !== undefined) updates.bio = req.body.bio;
 
   const user = await User.findByIdAndUpdate(req.user._id, updates, {
     new: true,

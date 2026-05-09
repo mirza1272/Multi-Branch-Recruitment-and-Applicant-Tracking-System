@@ -180,10 +180,10 @@ export const getMyApplications = asyncHandler(async (req, res) => {
   const applications = await Application.find({ userId: req.user._id })
     .populate({
       path: "jobId",
-      select: "title department seats",
       populate: { path: "branchId", select: "branchName" },
     })
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
 
   return res.status(200).json(new ApiResponse(200, { applications }, "Your applications fetched"));
 });
@@ -196,6 +196,14 @@ export const getAllApplications = asyncHandler(async (req, res) => {
   const { jobId, status, page = 1, limit = 20 } = req.query;
 
   const filter = {};
+  
+  // If user is a Recruiter, they should only see applications for THEIR jobs
+  if (req.user.role === "recruiter") {
+    const myJobs = await Job.find({ createdBy: req.user._id }).select("_id");
+    const myJobIds = myJobs.map(j => j._id);
+    filter.jobId = { $in: myJobIds };
+  }
+
   if (jobId) filter.jobId = jobId;
   if (status) filter.status = status;
 
@@ -206,12 +214,12 @@ export const getAllApplications = asyncHandler(async (req, res) => {
     .populate("userId", "name email")
     .populate({
       path: "jobId",
-      select: "title department",
       populate: { path: "branchId", select: "branchName" },
     })
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(Number(limit));
+    .limit(Number(limit))
+    .lean();
 
   return res.status(200).json(
     new ApiResponse(200, {
@@ -230,17 +238,26 @@ export const getApplicationById = asyncHandler(async (req, res) => {
     .populate("userId", "name email")
     .populate({
       path: "jobId",
-      populate: { path: "branchId", select: "branchName" },
+      populate: [{ path: "branchId", select: "branchName" }, { path: "createdBy" }],
     });
 
   if (!application) throw new ApiError(404, "Application not found");
 
+  const isCandidate = req.user.role === "candidate";
+  const isRecruiter = req.user.role === "recruiter";
+  const isAdmin = req.user.role === "admin";
+
   // Candidates can only view their own
-  if (
-    req.user.role === "candidate" &&
-    application.userId._id.toString() !== req.user._id.toString()
-  ) {
+  if (isCandidate && application.userId._id.toString() !== req.user._id.toString()) {
     throw new ApiError(403, "Access denied");
+  }
+
+  // Recruiters can only view if they created the job
+  if (isRecruiter) {
+    const jobCreatorId = application.jobId?.createdBy?._id || application.jobId?.createdBy || "";
+    if (jobCreatorId.toString() !== req.user._id.toString()) {
+      throw new ApiError(403, "Access denied to this application");
+    }
   }
 
   // Attach interview if it exists

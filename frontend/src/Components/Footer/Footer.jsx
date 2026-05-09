@@ -4,9 +4,11 @@ import { Link } from 'react-router-dom';
 function Footer() {
     const user = JSON.parse(localStorage.getItem('user'));
 
+    const isHR = user?.role?.toLowerCase() === 'hr' || user?.role?.toLowerCase() === 'recruiter';
+
     const quickLinks = [
-        { label: 'Find Jobs', path: '/jobs' },
-        ...(user?.role?.toLowerCase() !== 'candidate' ? [{ label: 'Post a Job', path: user?.role?.toLowerCase() === 'hr' ? '/post-job' : '/signup' }] : []),
+        ...(!isHR ? [{ label: 'Find Jobs', path: '/jobs' }] : []),
+        ...(user?.role?.toLowerCase() !== 'candidate' ? [{ label: 'Post a Job', path: isHR ? '/post-job' : '/signup' }] : []),
         { label: 'How it Works', path: '/about-us' }
     ];
 

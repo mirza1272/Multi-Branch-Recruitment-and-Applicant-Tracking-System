@@ -66,7 +66,12 @@ function SignUp() {
                 name: formData.name,
                 email: formData.email,
                 password: formData.password,
-                role: formData.role.toLowerCase(),
+                role: formData.role === 'HR' ? 'recruiter' : 'candidate',
+                phone: formData.phone,
+                location: formData.location,
+                skills: formData.role === 'Candidate' ? formData.skills : undefined,
+                company: formData.role === 'HR' ? formData.company : undefined,
+                bio: formData.bio
             });
 
             sessionStorage.removeItem('signup_form_progress');

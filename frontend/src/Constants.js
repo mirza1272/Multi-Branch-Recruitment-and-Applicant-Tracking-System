@@ -1,9 +1,9 @@
 export const STATUSES = [
-    "Under Review",
-    "Shortlisted",
-    "Interview Scheduled",
-    "Hired",
-    "Rejected"
+    "pending",
+    "shortlisted",
+    "interview scheduled",
+    "rejected",
+    "accepted"
 ];
 
 export const CATEGORIES = [

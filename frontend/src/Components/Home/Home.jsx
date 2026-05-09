@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { getJobsRequest, getBranchesRequest } from "../../api/api";
 import HRHome from "./HRHome";
 
 const SearchIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>;
@@ -53,21 +54,52 @@ function Home() {
     const [keyword, setKeyword] = React.useState("");
     const [location, setLocation] = React.useState("All");
     const [category, setCategory] = React.useState("All");
+    const [trendingJobs, setTrendingJobs] = React.useState([]);
+    const [branches, setBranches] = React.useState([]);
+
+    React.useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Fetch trending jobs (limit 4)
+                const jobRes = await getJobsRequest({ limit: 4 });
+                if (jobRes.data?.success) {
+                    setTrendingJobs(jobRes.data.data.jobs);
+                }
+
+                // Fetch branches
+                const branchRes = await getBranchesRequest();
+                if (branchRes.data?.success) {
+                    setBranches(branchRes.data.data.branches);
+                }
+            } catch (err) {
+                console.error("Home Data Fetch Error:", err);
+            }
+        };
+        fetchData();
+    }, []);
 
     // Dynamic Job Recommendations based on skills
-    let displayedJobs = RECENT_JOBS;
-    let jobSectionTitle = "Recent Jobs Available";
-    let jobSectionSubtitle = "Discover your next career move with these top opportunities.";
+    let displayedJobs = trendingJobs;
+    let jobSectionTitle = "Trending Opportunities";
+    let jobSectionSubtitle = "Discover the latest job openings from top companies.";
 
-    if (user?.role === 'Candidate' && user?.skills) {
+    if (user?.role === 'candidate' && user?.skills) {
         jobSectionTitle = "Recommended Jobs for You";
         jobSectionSubtitle = `Based on your skills: ${user.skills}`;
 
         const skillsArray = user.skills.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
-        if (skillsArray.length > 0) {
-            displayedJobs = [...RECENT_JOBS].sort((a, b) => {
-                const aMatch = skillsArray.some(s => a.title.toLowerCase().includes(s) || a.category.toLowerCase().includes(s));
-                const bMatch = skillsArray.some(s => b.title.toLowerCase().includes(s) || b.category.toLowerCase().includes(s));
+        if (skillsArray.length > 0 && trendingJobs.length > 0) {
+            displayedJobs = [...trendingJobs].sort((a, b) => {
+                const aMatch = skillsArray.some(s => 
+                    a.title.toLowerCase().includes(s) || 
+                    (a.category && a.category.toLowerCase().includes(s)) ||
+                    (a.department && a.department.toLowerCase().includes(s))
+                );
+                const bMatch = skillsArray.some(s => 
+                    b.title.toLowerCase().includes(s) || 
+                    (b.category && b.category.toLowerCase().includes(s)) ||
+                    (b.department && b.department.toLowerCase().includes(s))
+                );
                 return (bMatch ? 1 : 0) - (aMatch ? 1 : 0);
             });
         }
@@ -80,7 +112,7 @@ function Home() {
         document.documentElement.style.scrollBehavior = '';
     }, []);
 
-    if (user?.role === 'HR') {
+    if (user?.role === 'recruiter' || user?.role === 'admin') {
         return <HRHome />;
     }
 
@@ -130,11 +162,11 @@ function Home() {
                             <select style={{ background: 'transparent', border: 'none', outline: 'none', fontSize: '0.875rem', color: C.text, width: '100%', cursor: 'pointer' }}
                                 value={location} onChange={e => setLocation(e.target.value)}>
                                 <option value="All">Select Branch</option>
-                                <option value="New York">New York</option>
-                                <option value="London">London</option>
-                                <option value="Texas">Texas</option>
-                                <option value="Boston">Boston</option>
-                                <option value="Los Angeles">Los Angeles</option>
+                                {branches.map(b => {
+                                    const bName = b.branchName || b;
+                                    const bId = b._id || b;
+                                    return <option key={bId} value={bName}>{bName}</option>;
+                                })}
                             </select>
                         </div>
                         <div className="w-full md:w-auto" style={{ flex: 1, minWidth: '160px', display: 'flex', alignItems: 'center', padding: '0.75rem 1rem' }}>
@@ -172,7 +204,7 @@ function Home() {
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {displayedJobs.map(job => (
-                            <div key={job.jobId} className="glass-card" style={{ padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+                            <div key={job._id || job.id} className="glass-card" style={{ padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
                                         <h3 style={{ fontSize: '1rem', fontWeight: '700', color: C.text }}>{job.title}</h3>
@@ -180,10 +212,10 @@ function Home() {
                                     <p style={{ fontSize: '0.8rem', color: C.muted, marginBottom: '0.75rem' }}>{job.company}</p>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                                         {[
-                                            { icon: <BriefcaseIcon />, text: job.category },
-                                            { icon: <ClockIcon />, text: job.type },
-                                            { icon: <DollarIcon />, text: job.salary },
-                                            { icon: <MapPinIcon />, text: job.location },
+                                            { icon: <BriefcaseIcon />, text: job.category || job.department || "Other" },
+                                            { icon: <ClockIcon />, text: job.type || "Full Time" },
+                                            { icon: <DollarIcon />, text: job.salary || "Competitive" },
+                                            { icon: <MapPinIcon />, text: job.location || job.branchId?.branchName || "N/A" },
                                         ].map((tag, idx) => (
                                             <span key={idx} className="tag-pill">
                                                 <span style={{ color: C.primary }}>{tag.icon}</span>{tag.text}
@@ -191,12 +223,12 @@ function Home() {
                                         ))}
                                     </div>
                                 </div>
-                                <button onClick={() => navigate(`/job-details/${job.jobId}`)} className="btn-secondary" style={{ padding: '0.45rem 1.2rem', fontSize: '0.8rem', flexShrink: 0 }}>Job Details</button>
+                                <button onClick={() => navigate(`/job-details/${job._id || job.id}`)} className="btn-secondary" style={{ padding: '0.45rem 1.2rem', fontSize: '0.8rem', flexShrink: 0 }}>Job Details</button>
                             </div>
                         ))}
                     </div>
-                </div>
-            </section>
+                 </div>
+             </section>
 
             {/* ── CATEGORIES ── */}
             <section style={{ background: C.bg, padding: '5rem 1rem' }}>

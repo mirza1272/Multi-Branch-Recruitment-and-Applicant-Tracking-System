@@ -186,19 +186,21 @@ function JobDetails() {
                                 </p>
                             </section>
 
-                            <section>
-                                <h3 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                    <span style={{ width: '4px', height: '18px', background: C.primary, borderRadius: '2px' }}></span> Key Responsibilities
-                                </h3>
-                                <div style={{ display: 'grid', gap: '1rem' }}>
-                                    {[1, 2, 3, 4, 5].map(i => (
-                                        <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                                            <span style={{ marginTop: '3px', flexShrink: 0 }}><CheckIcon /></span>
-                                            <p style={{ color: C.muted, fontSize: '0.9rem', lineHeight: 1.6 }}>Tincidunt porta proin in. Orci imperdiet nisl dignissim pellentesque morbi vitae facilisis dignissim augue lorem amet adipiscing.</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
+                            {(job.requirements || job.responsibilities) && (
+                                <section>
+                                    <h3 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                        <span style={{ width: '4px', height: '18px', background: C.primary, borderRadius: '2px' }}></span> Key Responsibilities
+                                    </h3>
+                                    <div style={{ display: 'grid', gap: '1rem' }}>
+                                        {(job.requirements || job.responsibilities).split('\n').filter(r => r.trim()).map((req, i) => (
+                                            <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                                                <span style={{ marginTop: '3px', flexShrink: 0 }}><CheckIcon /></span>
+                                                <p style={{ color: C.muted, fontSize: '0.9rem', lineHeight: 1.6 }}>{req.trim()}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
                         </div>
                     </div>
 
@@ -210,7 +212,7 @@ function JobDetails() {
                                 if (isLoggedIn) {
                                     navigate(`/apply-job/${job._id}`);
                                 } else {
-                                    navigate('/login');
+                                    navigate('/signup');
                                 }
                             }}
                             className="btn-primary"
