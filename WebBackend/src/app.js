@@ -37,8 +37,7 @@ app.use(
   })
 );
 
-// 🔥 Handle preflight requests for all routes
-app.options("(.*)", cors());
+// CORS is already handled by the app.use(cors(...)) call above for all routes including preflight
 app.use(cookieParser());
 
 // Debug middleware to log requests
