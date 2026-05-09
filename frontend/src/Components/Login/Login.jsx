@@ -43,8 +43,16 @@ function Login() {
             // Home.jsx handles showing the correct view (Home or HRHome) based on role
             navigate('/');
         } catch (err) {
-            console.error(err);
-            setError(err.response?.data?.message || err.message || 'Unable to sign in. Please check your credentials.');
+            console.error("❌ Login Error Details:", err.response?.data || err.message);
+
+            // Handle different error types
+            if (err.response?.status === 404) {
+                setError("Account not found. Please check your email or sign up.");
+            } else if (err.response?.status === 401) {
+                setError("Incorrect password. Please try again.");
+            } else {
+                setError(err.response?.data?.message || err.message || 'Unable to sign in. Please try again later.');
+            }
         } finally {
             setIsLoading(false);
         }
