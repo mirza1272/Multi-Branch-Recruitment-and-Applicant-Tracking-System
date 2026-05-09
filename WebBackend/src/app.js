@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true, limit: "16mb" }));
 const allowedOrigins = [
   process.env.CLIENT_URL,
   "https://hrconnect-atc.vercel.app",
-  "https://hrconnect-ats.vercel.app", // 🔥 Updated domain
+  "https://hrconnect-ats.vercel.app",
   "http://localhost:5173",
   "http://localhost:3000",
 ].filter(Boolean);
@@ -31,9 +31,14 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: allowedOrigins,
-    credentials: true, // allow cookies cross-origin
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
   })
 );
+
+// 🔥 Handle preflight requests for all routes
+app.options("*", cors());
 app.use(cookieParser());
 
 // Debug middleware to log requests
