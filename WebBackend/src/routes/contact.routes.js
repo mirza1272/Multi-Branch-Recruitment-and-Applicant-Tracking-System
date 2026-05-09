@@ -1,3 +1,4 @@
+import express from "express";
 import { handleContactForm, handleSubscription } from "../controllers/contact.controller.js";
 
 const router = express.Router();
