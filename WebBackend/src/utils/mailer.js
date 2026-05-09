@@ -26,10 +26,15 @@ const transporter = nodemailer.createTransport({
 });
 
 // Verify transporter connection on startup (non-blocking)
+// Only log error if Resend is NOT being used, otherwise this is expected on Render
 transporter.verify().then(() => {
   console.log("✅ Mailer: Gmail SMTP Pool is ready");
 }).catch(err => {
-  console.error("❌ Mailer: Verification failed on startup:", err.message);
+  if (!process.env.RESEND_API) {
+    console.error("❌ Mailer: Gmail Verification failed:", err.message);
+  } else {
+    console.log("ℹ️ Mailer: Gmail SMTP unavailable (Expected on Render). Using Resend API as primary.");
+  }
 });
 
 const interviewTransporter = nodemailer.createTransport({
