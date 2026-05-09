@@ -13,11 +13,6 @@ export const APPLICATION_STATUS = {
   ACCEPTED: "accepted",
 };
 
-// Cloudinary folders
-export const CLOUDINARY_FOLDERS = {
-  RESUMES: "ats/resumes",
-  COVER_LETTERS: "ats/cover_letters",
-};
 
 // Allowed file types for uploads
 export const ALLOWED_FILE_TYPES = ["application/pdf", "application/msword",

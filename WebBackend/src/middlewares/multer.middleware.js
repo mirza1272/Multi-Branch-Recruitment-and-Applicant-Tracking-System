@@ -2,7 +2,7 @@ import multer from "multer";
 import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE } from "../constants.js";
 import ApiError from "../utils/ApiError.js";
 
-// Use memory storage so we can pipe the buffer directly to Cloudinary
+// Use memory storage so we can upload the buffer directly to Supabase
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {

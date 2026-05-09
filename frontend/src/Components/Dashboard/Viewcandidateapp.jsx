@@ -20,8 +20,6 @@ const ViewCandidateApp = () => {
     const navigate = useNavigate();
     const [application, setApplication] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [showResumeModal, setShowResumeModal] = useState(false);
-    const [showCoverLetterModal, setShowCoverLetterModal] = useState(false);
     const [status, setStatus] = useState("");
 
     useEffect(() => {
@@ -128,21 +126,35 @@ const ViewCandidateApp = () => {
                         <h3 style={SectionTitleS}>Documents</h3>
                         <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
                             {application.resumeUrl ? (
-                                <button
-                                    onClick={() => setShowResumeModal(true)}
-                                    style={DocBtnS(C.primary)}>
+                                <a
+                                    href={application.resumeUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ ...DocBtnS(C.primary), textDecoration: 'none' }}>
                                     <span style={{ fontSize: '1.2rem' }}>📄</span> View Resume
-                                </button>
+                                </a>
                             ) : (
                                 <span style={{ color: C.muted, fontSize: '0.9rem' }}>No resume uploaded</span>
                             )}
 
-                            {application.coverLetterUrl && (
-                                <button
-                                    onClick={() => setShowCoverLetterModal(true)}
-                                    style={DocBtnS(C.accent)}>
+                            {application.coverLetterUrl ? (
+                                <a
+                                    href={application.coverLetterUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ ...DocBtnS(C.accent), textDecoration: 'none' }}>
                                     <span style={{ fontSize: '1.2rem' }}>✉️</span> View Cover Letter
-                                </button>
+                                </a>
+                            ) : (
+                                <div style={{ 
+                                    ...DocBtnS(C.border), 
+                                    opacity: 0.5, 
+                                    cursor: 'not-allowed',
+                                    color: C.muted,
+                                    background: 'rgba(255,255,255,0.05)'
+                                }}>
+                                    <span style={{ fontSize: '1.2rem' }}>✉️</span> Cover Letter Not Provided
+                                </div>
                             )}
                         </div>
                     </div>
@@ -186,48 +198,6 @@ const ViewCandidateApp = () => {
                             )}
                         </div>
                     </div>
-                </div>
-            </div>
-
-            {/* Document Modals */}
-            <DocumentModal
-                isOpen={showResumeModal}
-                onClose={() => setShowResumeModal(false)}
-                title={`Resume: ${candidateName}`}
-                url={application.resumeUrl}
-            />
-
-            <DocumentModal
-                isOpen={showCoverLetterModal}
-                onClose={() => setShowCoverLetterModal(false)}
-                title={`Cover Letter: ${candidateName}`}
-                url={application.coverLetterUrl}
-            />
-        </div>
-    );
-};
-
-const DocumentModal = ({ isOpen, onClose, title, url }) => {
-    if (!isOpen) return null;
-
-    return (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>
-            <div style={{ background: C.card, width: '95%', maxWidth: '1000px', height: '90vh', borderRadius: '24px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}>
-                <div style={{ padding: '1.25rem 2rem', borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#1E293B' }}>
-                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: '#fff' }}>{title}</h3>
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                        <a href={url} target="_blank" rel="noopener noreferrer" style={{ background: 'rgba(59,130,246,0.1)', color: C.primary, textDecoration: 'none', padding: '0.5rem 1rem', borderRadius: '8px', fontWeight: '700', fontSize: '0.85rem' }}>Open in New Tab</a>
-                        <button onClick={onClose} style={{ background: 'rgba(239,68,68,0.1)', color: C.error, border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '0.85rem' }}>Close</button>
-                    </div>
-                </div>
-                <div style={{ flex: 1, background: '#e5e7eb' }}>
-                    {/* Using an object tag to embed the PDF cleanly */}
-                    <object data={url} type="application/pdf" width="100%" height="100%" style={{ display: 'block' }}>
-                        <div style={{ padding: '3rem', textAlign: 'center', color: '#374151' }}>
-                            <p style={{ marginBottom: '1rem', fontWeight: '600' }}>Your browser doesn't support embedded PDFs.</p>
-                            <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: C.primary, fontWeight: '700', textDecoration: 'none' }}>Click here to view it directly</a>
-                        </div>
-                    </object>
                 </div>
             </div>
         </div>

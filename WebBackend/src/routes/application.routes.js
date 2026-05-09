@@ -29,13 +29,9 @@ router.get("/my", authorizeRoles("candidate"), getMyApplications);
 
 // HR routes
 router.get("/", authorizeRoles("admin", "recruiter"), getAllApplications);
-router.patch(
-  "/:id/status",
-  authorizeRoles("admin", "recruiter"),
-  updateApplicationStatus
-);
+router.patch("/:id/status", authorizeRoles("admin", "recruiter"), updateApplicationStatus);
 
-// Shared (candidate sees own, HR sees all)
+// Shared
 router.get("/:id", getApplicationById);
 router.delete("/:id", deleteApplication);
 

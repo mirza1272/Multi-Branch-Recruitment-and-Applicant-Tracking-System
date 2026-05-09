@@ -166,9 +166,9 @@ const ScheduleInterview = () => {
             </div>
             <style>{`
                 input::-webkit-calendar-picker-indicator {
-                    filter: invert(1);
+                    filter: brightness(0) invert(1);
                     cursor: pointer;
-                    opacity: 0.8;
+                    opacity: 0.9;
                     transition: 0.2s;
                 }
                 input::-webkit-calendar-picker-indicator:hover {
