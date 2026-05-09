@@ -6,14 +6,14 @@ if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
   console.warn("⚠️ WARNING: EMAIL_USER or EMAIL_PASS is missing in environment variables!");
 }
 
-// Create reusable transporter with POOLING for production
+// Create reusable transporter with POOLING and IPv4 force
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
-  secure: false, // STARTTLS
-  pool: true,    // Use connection pooling
+  secure: false,
+  pool: true,
   maxConnections: 5,
-  maxMessages: 100,
+  family: 4,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -21,7 +21,7 @@ const transporter = nodemailer.createTransport({
   tls: {
     rejectUnauthorized: false
   },
-  connectionTimeout: 5000, // 5 seconds connection timeout
+  connectionTimeout: 5000,
   greetingTimeout: 5000,
   socketTimeout: 5000,
 });
@@ -52,11 +52,49 @@ const interviewTransporter = nodemailer.createTransport({
 });
 
 /**
- * NON-BLOCKING Email send function
- * Ensures API responds instantly while email sends in background
+ * BULLETPROOF Background Email Sending with Retries
+ * Fixes ENETUNREACH and handles transient failures
+ */
+const sendWithRetry = async (transp, options, retries = 3, delay = 2000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const info = await transp.sendMail(options);
+      console.log(`✅ Email sent [Attempt ${i + 1}]: ${info.messageId}`);
+      return info;
+    } catch (err) {
+      console.error(`⚠️ Email Attempt ${i + 1} failed: ${err.message}`);
+      if (i === retries - 1) throw err;
+      await new Promise(res => setTimeout(res, delay * (i + 1))); // Exponential backoff
+    }
+  }
+};
+
+/**
+ * PRODUCTION-GRADE Non-blocking Email function
  */
 export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }) => {
   const fromEmail = useInterviewEmail ? process.env.INTERVIEW_GMAIL_USER : process.env.EMAIL_USER;
+
+  // Resend API Fallback (Optional but highly recommended for production)
+  // If RESEND_API_KEY is present, it will use Resend's REST API which is much more stable
+  if (process.env.RESEND_API_KEY && !useInterviewEmail) {
+    console.log(`🚀 Using Resend API for ${to}`);
+    fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.RESEND_API_KEY}`
+      },
+      body: JSON.stringify({
+        from: "HRConnect <onboarding@resend.dev>", // Or your verified domain
+        to: [to],
+        subject,
+        html
+      })
+    }).then(r => r.json()).then(d => console.log("✅ Resend success:", d)).catch(e => console.error("❌ Resend error:", e));
+    return true;
+  }
+
   const mailOptions = {
     from: `"HRConnect Team" <${fromEmail}>`,
     to,
@@ -64,15 +102,15 @@ export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }
     html,
   };
 
-  console.log(`📧 Queuing email to: ${to}`);
+  console.log(`📧 Queuing background email to: ${to}`);
 
-  // We DON'T return/await the promise to the caller to prevent blocking the API response
   const currentTransporter = useInterviewEmail ? interviewTransporter : transporter;
-  currentTransporter.sendMail(mailOptions)
-    .then(info => console.log(`✅ Email sent to ${to}: ${info.messageId}`))
-    .catch(err => console.error(`❌ Background Email Error [to: ${to}]:`, err.message));
 
-  return true; // Return immediately
+  // Execute in background with retries
+  sendWithRetry(currentTransporter, mailOptions)
+    .catch(err => console.error(`🚨 FATAL: Email failed after all retries:`, err.message));
+
+  return true; // Return to API instantly
 };
 
 // ─────────────────────────────────────────────
