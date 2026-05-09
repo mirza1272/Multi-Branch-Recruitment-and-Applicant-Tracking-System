@@ -6,11 +6,14 @@ if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
   console.warn("⚠️ WARNING: EMAIL_USER or EMAIL_PASS is missing in environment variables!");
 }
 
-// Create reusable transporter
+// Create reusable transporter with POOLING for production
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
-  secure: false, // Use STARTTLS
+  secure: false, // STARTTLS
+  pool: true,    // Use connection pooling
+  maxConnections: 5,
+  maxMessages: 100,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -18,24 +21,24 @@ const transporter = nodemailer.createTransport({
   tls: {
     rejectUnauthorized: false
   },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
+  connectionTimeout: 5000, // 5 seconds connection timeout
+  greetingTimeout: 5000,
+  socketTimeout: 5000,
 });
 
-// Verify transporter connection on startup
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ Transporter Verification Failed:", error.message);
-  } else {
-    console.log("✅ Mailer is ready to take our messages");
-  }
+// Verify transporter connection on startup (non-blocking)
+transporter.verify().then(() => {
+  console.log("✅ Mailer: Gmail SMTP Pool is ready");
+}).catch(err => {
+  console.error("❌ Mailer: Verification failed on startup:", err.message);
 });
 
 const interviewTransporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false,
+  pool: true,
+  maxConnections: 3,
   auth: {
     user: process.env.INTERVIEW_GMAIL_USER,
     pass: process.env.INTERVIEW_GMAIL_PASS,
@@ -43,45 +46,33 @@ const interviewTransporter = nodemailer.createTransport({
   tls: {
     rejectUnauthorized: false
   },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
+  connectionTimeout: 5000,
+  greetingTimeout: 5000,
+  socketTimeout: 5000,
 });
 
 /**
- * Core send function with explicit timeout
+ * NON-BLOCKING Email send function
+ * Ensures API responds instantly while email sends in background
  */
-const sendMailWithTimeout = (transp, options) => {
-  return Promise.race([
-    transp.sendMail(options),
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Email sending timed out after 15s")), 15000)
-    )
-  ]);
-};
+export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }) => {
+  const fromEmail = useInterviewEmail ? process.env.INTERVIEW_GMAIL_USER : process.env.EMAIL_USER;
+  const mailOptions = {
+    from: `"HRConnect Team" <${fromEmail}>`,
+    to,
+    subject,
+    html,
+  };
 
-const sendEmail = async ({ to, subject, html, useInterviewEmail = false }) => {
-  try {
-    const fromEmail = useInterviewEmail ? process.env.INTERVIEW_GMAIL_USER : process.env.EMAIL_USER;
-    const mailOptions = {
-      from: `"HRConnect Team" <${fromEmail}>`,
-      to,
-      subject,
-      html,
-    };
+  console.log(`📧 Queuing email to: ${to}`);
 
-    console.log(`📧 Attempting to send email to: ${to} (Subject: ${subject})`);
-    const currentTransporter = useInterviewEmail ? interviewTransporter : transporter;
+  // We DON'T return/await the promise to the caller to prevent blocking the API response
+  const currentTransporter = useInterviewEmail ? interviewTransporter : transporter;
+  currentTransporter.sendMail(mailOptions)
+    .then(info => console.log(`✅ Email sent to ${to}: ${info.messageId}`))
+    .catch(err => console.error(`❌ Background Email Error [to: ${to}]:`, err.message));
 
-    // Use the timeout wrapper
-    const info = await sendMailWithTimeout(currentTransporter, mailOptions);
-
-    console.log(`✅ Email sent successfully: ${info.messageId}`);
-    return info;
-  } catch (error) {
-    console.error(`❌ Email Send Error [to: ${to}]:`, error.message);
-    throw error;
-  }
+  return true; // Return immediately
 };
 
 // ─────────────────────────────────────────────
