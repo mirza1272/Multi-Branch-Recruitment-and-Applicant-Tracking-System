@@ -102,10 +102,10 @@ function ContactUs() {
                         </p>
 
                         <div className="contact-info-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <ContactInfoItem icon={<PhoneIcon />} label="Call for inquiry" val="+1 (212) 555-0198" />
-                            <ContactInfoItem icon={<MailIcon />} label="Send us email" val="support@hrconnect.com" />
+                            <ContactInfoItem icon={<PhoneIcon />} label="Call for inquiry" val="+92 303 8607925" />
+                            <ContactInfoItem icon={<MailIcon />} label="Send us email" val="mirzahaseeb0566@gmail.com" />
                             <ContactInfoItem icon={<ClockIcon />} label="Opening hours" val="Mon - Fri: 09AM - 06PM" />
-                            <ContactInfoItem icon={<MapIcon />} label="Office Address" val="7th Ave, New York, NY 10001, USA" />
+                            <ContactInfoItem icon={<MapIcon />} label="Office Address" val="Lahore, Punjab, Pakistan" />
                         </div>
                     </div>
 
@@ -150,8 +150,8 @@ function ContactUs() {
                 {/* Map Section */}
                 <div className="reveal contact-map" style={{ marginTop: '6rem', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${C.border}`, height: '450px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
                     <iframe
-                        title="New York Office Map"
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d193595.15830869428!2d-74.119763973046!3d40.69766374874431!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2s!4v1699266000000!5m2!1sen!2s"
+                        title="Lahore Office Map"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d217759.99380853743!2d74.3343893!3d31.4826352!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39190483e58107d9%3A0xc202c607751d8d!2sLahore%2C%20Punjab%2C%20Pakistan!5e0!3m2!1sen!2s!4v1700000000000!5m2!1sen!2s"
                         width="100%"
                         height="100%"
                         style={{ border: 0 }}
