@@ -75,35 +75,45 @@ const sendWithRetry = async (transp, options, retries = 3, delay = 2000) => {
 
 /**
  * PRODUCTION-GRADE Non-blocking Email function
- * Uses Resend API if RESEND_API is present, otherwise falls back to Gmail
+ * Uses SendGrid API if SENDGRID_API is present, otherwise falls back to Gmail
  */
 export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }) => {
   const fromEmail = useInterviewEmail ? process.env.INTERVIEW_GMAIL_USER : process.env.EMAIL_USER;
 
-  // 💎 PRIMARY: Resend API (Best for Render)
-  if (process.env.RESEND_API && !useInterviewEmail) {
-    console.log(`🚀 Using Resend API for ${to}`);
-    fetch("https://api.resend.com/emails", {
+  // 💎 PRIMARY: SendGrid API (Best for Render, sends to ANYONE without domain)
+  if (process.env.SENDGRID_API) {
+    console.log(`🚀 Using SendGrid API for ${to}`);
+    
+    fetch("https://api.sendgrid.com/v3/mail/send", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.RESEND_API}`
+        "Authorization": `Bearer ${process.env.SENDGRID_API}`,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        from: "HRConnect <onboarding@resend.dev>",
-        to: [to],
-        subject,
-        html
+        personalizations: [{ to: [{ email: to }] }],
+        from: { 
+          email: fromEmail, 
+          name: "HRConnect Team" 
+        },
+        subject: subject,
+        content: [{ 
+          type: "text/html", 
+          value: html 
+        }]
       })
     })
-      .then(async (res) => {
-        const data = await res.json();
-        if (res.ok) console.log("✅ Resend Success:", data);
-        else console.error("❌ Resend Error Response:", data);
-      })
-      .catch(e => console.error("❌ Resend Fetch Error:", e.message));
+    .then(async (res) => {
+      if (res.status === 202) {
+        console.log("✅ SendGrid success!");
+      } else {
+        const errorData = await res.json();
+        console.error("❌ SendGrid error details:", JSON.stringify(errorData, null, 2));
+      }
+    })
+    .catch(e => console.error("❌ SendGrid fetch error:", e.message));
 
-    return true; // Non-blocking
+    return true; // Return to API instantly
   }
 
   const mailOptions = {
