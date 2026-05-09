@@ -37,7 +37,6 @@
 ### Frontend
 - **React.js** (Functional Components, Hooks)
 - **Vanilla CSS** (Premium Glassmorphism & Custom Animations)
-- **Axios** (API Integration)
 - **React Router** (Client-side Routing)
 
 ### Backend
