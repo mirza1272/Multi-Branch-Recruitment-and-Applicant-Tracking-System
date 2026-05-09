@@ -43,7 +43,7 @@ const PostJob = () => {
                 const branchRes = await getBranchesRequest();
                 const fetchedBranches = branchRes.data?.data?.branches || [];
                 setBranches(fetchedBranches);
-                
+
                 let defaultBranchId = fetchedBranches.length > 0 ? fetchedBranches[0]._id : "";
 
                 // If edit mode, fetch job details
@@ -80,7 +80,7 @@ const PostJob = () => {
         setIsSubmitting(true);
 
         try {
-            if (editId) {
+            if (editId && editId !== "undefined") {
                 await updateJobRequest(editId, formData);
             } else {
                 await createJobRequest(formData);
@@ -147,7 +147,7 @@ const PostJob = () => {
                                     {branches.map(b => <option key={b._id} value={b._id}>{b.branchName}</option>)}
                                 </select>
                             </div>
-                            
+
                             <div>
                                 <label style={labelS}>Department</label>
                                 <input required type="text" name="department" value={formData.department} onChange={handleChange} placeholder="e.g. Engineering" style={inputS} />

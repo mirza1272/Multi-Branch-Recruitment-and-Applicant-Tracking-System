@@ -161,6 +161,7 @@ jobSchema.pre("save", async function () {
 jobSchema.methods.toJSON = function () {
   const obj = this.toObject();
   return {
+    _id: obj._id,
     jobId: obj.jobId,
     title: obj.title,
     company: obj.company,
