@@ -9,8 +9,8 @@ if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
 // Create reusable transporter
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  port: 587,
+  secure: false, // Use STARTTLS
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
   tls: {
     rejectUnauthorized: false
   },
-  connectionTimeout: 10000, // 10 seconds
+  connectionTimeout: 10000,
   greetingTimeout: 10000,
   socketTimeout: 10000,
 });
@@ -34,8 +34,8 @@ transporter.verify((error, success) => {
 
 const interviewTransporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.INTERVIEW_GMAIL_USER,
     pass: process.env.INTERVIEW_GMAIL_PASS,
@@ -49,8 +49,17 @@ const interviewTransporter = nodemailer.createTransport({
 });
 
 /**
- * Core send function
+ * Core send function with explicit timeout
  */
+const sendMailWithTimeout = (transp, options) => {
+  return Promise.race([
+    transp.sendMail(options),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Email sending timed out after 15s")), 15000)
+    )
+  ]);
+};
+
 const sendEmail = async ({ to, subject, html, useInterviewEmail = false }) => {
   try {
     const fromEmail = useInterviewEmail ? process.env.INTERVIEW_GMAIL_USER : process.env.EMAIL_USER;
@@ -63,7 +72,10 @@ const sendEmail = async ({ to, subject, html, useInterviewEmail = false }) => {
 
     console.log(`📧 Attempting to send email to: ${to} (Subject: ${subject})`);
     const currentTransporter = useInterviewEmail ? interviewTransporter : transporter;
-    const info = await currentTransporter.sendMail(mailOptions);
+
+    // Use the timeout wrapper
+    const info = await sendMailWithTimeout(currentTransporter, mailOptions);
+
     console.log(`✅ Email sent successfully: ${info.messageId}`);
     return info;
   } catch (error) {
