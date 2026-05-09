@@ -70,6 +70,7 @@ const sendWithRetry = async (transp, options, retries = 3, delay = 2000) => {
 
 /**
  * PRODUCTION-GRADE Non-blocking Email function
+ * Uses Gmail SMTP with robust Render-specific settings
  */
 export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }) => {
   const fromEmail = useInterviewEmail ? process.env.INTERVIEW_GMAIL_USER : process.env.EMAIL_USER;
@@ -85,10 +86,9 @@ export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }
 
   const currentTransporter = useInterviewEmail ? interviewTransporter : transporter;
 
-  // Execute in background with retries
-  // We DON'T await this so the API can respond instantly
+  // Non-blocking background task with retries
   sendWithRetry(currentTransporter, mailOptions)
-    .catch(err => console.error(`🚨 FATAL: Gmail SMTP failed after all retries for ${to}:`, err.message));
+    .catch(err => console.error(`🚨 FATAL: Gmail SMTP failed for ${to}:`, err.message));
 
   return true; // Return to API instantly
 };
