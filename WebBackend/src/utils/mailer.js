@@ -83,7 +83,7 @@ export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }
 
   // 💎 PRIMARY: SendGrid API (Best for Render, sends to ANYONE without domain)
   if (process.env.SENDGRID_API) {
-    console.log(`🚀 Using SendGrid API for ${to}`);
+    console.log(`🚀 Using SendGrid API for ${to} (From: ${fromEmail})`);
 
     fetch("https://api.sendgrid.com/v3/mail/send", {
       method: "POST",
