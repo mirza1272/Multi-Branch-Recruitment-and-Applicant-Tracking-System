@@ -6,24 +6,23 @@ if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
   console.warn("⚠️ WARNING: EMAIL_USER or EMAIL_PASS is missing in environment variables!");
 }
 
-// Create reusable transporter with POOLING and IPv4 force
+// Create reusable transporter with SSL and IPv4 force for Render
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  pool: true,
-  maxConnections: 5,
-  family: 4,
+  port: 465,
+  secure: true, // Use SSL for port 465
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
   tls: {
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
+    servername: 'smtp.gmail.com' // Explicitly set servername for SSL handshake
   },
-  connectionTimeout: 5000,
-  greetingTimeout: 5000,
-  socketTimeout: 5000,
+  family: 4, // 🔥 Force IPv4 to fix 'ENETUNREACH' on Render
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
 });
 
 // Verify transporter connection on startup (non-blocking)
@@ -35,20 +34,20 @@ transporter.verify().then(() => {
 
 const interviewTransporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  pool: true,
-  maxConnections: 3,
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.INTERVIEW_GMAIL_USER,
     pass: process.env.INTERVIEW_GMAIL_PASS,
   },
   tls: {
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
+    servername: 'smtp.gmail.com'
   },
-  connectionTimeout: 5000,
-  greetingTimeout: 5000,
-  socketTimeout: 5000,
+  family: 4,
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
 });
 
 /**
@@ -75,26 +74,6 @@ const sendWithRetry = async (transp, options, retries = 3, delay = 2000) => {
 export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }) => {
   const fromEmail = useInterviewEmail ? process.env.INTERVIEW_GMAIL_USER : process.env.EMAIL_USER;
 
-  // Resend API Fallback (Optional but highly recommended for production)
-  // If RESEND_API is present, it will use Resend's REST API which is much more stable
-  if (process.env.RESEND_API && !useInterviewEmail) {
-    console.log(`🚀 Using Resend API for ${to}`);
-    fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.RESEND_API}`
-      },
-      body: JSON.stringify({
-        from: "HRConnect <onboarding@resend.dev>", // Or your verified domain
-        to: [to],
-        subject,
-        html
-      })
-    }).then(r => r.json()).then(d => console.log("✅ Resend success:", d)).catch(e => console.error("❌ Resend error:", e));
-    return true;
-  }
-
   const mailOptions = {
     from: `"HRConnect Team" <${fromEmail}>`,
     to,
@@ -102,13 +81,14 @@ export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }
     html,
   };
 
-  console.log(`📧 Queuing background email to: ${to}`);
+  console.log(`📧 Queuing background email via Gmail to: ${to}`);
 
   const currentTransporter = useInterviewEmail ? interviewTransporter : transporter;
 
   // Execute in background with retries
+  // We DON'T await this so the API can respond instantly
   sendWithRetry(currentTransporter, mailOptions)
-    .catch(err => console.error(`🚨 FATAL: Email failed after all retries:`, err.message));
+    .catch(err => console.error(`🚨 FATAL: Gmail SMTP failed after all retries for ${to}:`, err.message));
 
   return true; // Return to API instantly
 };
