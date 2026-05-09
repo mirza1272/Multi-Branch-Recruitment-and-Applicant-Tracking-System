@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Get the base API URL from environment variables
-const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
 const api = axios.create({
   // Use absolute URL if provided, otherwise use relative path for local dev proxy
