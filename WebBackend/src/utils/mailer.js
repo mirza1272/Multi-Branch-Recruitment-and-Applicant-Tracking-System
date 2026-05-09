@@ -3,33 +3,53 @@ import { EMAIL_SUBJECTS } from "../constants.js";
 
 // Create reusable transporter
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // Use SSL
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  tls: {
+    rejectUnauthorized: false // Helps with some hosting environments
+  }
 });
 
 const interviewTransporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.INTERVIEW_GMAIL_USER,
     pass: process.env.INTERVIEW_GMAIL_PASS,
   },
+  tls: {
+    rejectUnauthorized: false
+  }
 });
 
 /**
  * Core send function
  */
 const sendEmail = async ({ to, subject, html, useInterviewEmail = false }) => {
-  const mailOptions = {
-    from: `"Recruitment Team" <${useInterviewEmail ? process.env.INTERVIEW_GMAIL_USER : process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  };
-  const currentTransporter = useInterviewEmail ? interviewTransporter : transporter;
-  await currentTransporter.sendMail(mailOptions);
+  try {
+    const fromEmail = useInterviewEmail ? process.env.INTERVIEW_GMAIL_USER : process.env.EMAIL_USER;
+    const mailOptions = {
+      from: `"HRConnect Team" <${fromEmail}>`,
+      to,
+      subject,
+      html,
+    };
+
+    console.log(`📧 Attempting to send email to: ${to} (Subject: ${subject})`);
+    const currentTransporter = useInterviewEmail ? interviewTransporter : transporter;
+    const info = await currentTransporter.sendMail(mailOptions);
+    console.log(`✅ Email sent successfully: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`❌ Email Send Error [to: ${to}]:`, error.message);
+    throw error;
+  }
 };
 
 // ─────────────────────────────────────────────
