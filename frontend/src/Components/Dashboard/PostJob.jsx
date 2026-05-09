@@ -80,7 +80,7 @@ const PostJob = () => {
         setIsSubmitting(true);
 
         try {
-            if (editId) {
+            if (editId && editId !== "undefined") {
                 await updateJobRequest(editId, formData);
             } else {
                 await createJobRequest(formData);
