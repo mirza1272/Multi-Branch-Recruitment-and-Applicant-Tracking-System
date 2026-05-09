@@ -23,6 +23,7 @@ app.use(express.urlencoded({ extended: true, limit: "16mb" }));
 const allowedOrigins = [
   process.env.CLIENT_URL,
   "https://hrconnect-atc.vercel.app",
+  "https://hrconnect-ats.vercel.app", // 🔥 Updated domain
   "http://localhost:5173",
   "http://localhost:3000",
 ].filter(Boolean);
