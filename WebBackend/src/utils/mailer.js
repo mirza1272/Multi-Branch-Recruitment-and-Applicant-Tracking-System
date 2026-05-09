@@ -78,8 +78,8 @@ const sendWithRetry = async (transp, options, retries = 3, delay = 2000) => {
  * Uses SendGrid API if SENDGRID_API is present, otherwise falls back to Gmail
  */
 export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }) => {
-  // 🔥 Consolidating everything to use the Interview email account as requested
-  const fromEmail = process.env.INTERVIEW_GMAIL_USER;
+  // 🔥 Using EMAIL_USER (mirzahaseeb0566@gmail.com) as requested
+  const fromEmail = process.env.EMAIL_USER;
 
   // 💎 PRIMARY: SendGrid API (Best for Render, sends to ANYONE without domain)
   if (process.env.SENDGRID_API) {
