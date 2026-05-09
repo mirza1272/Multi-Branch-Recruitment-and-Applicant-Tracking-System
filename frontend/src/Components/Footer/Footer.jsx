@@ -4,7 +4,7 @@ import { subscribeRequest } from '../../api/api';
 
 function Footer() {
     const user = JSON.parse(localStorage.getItem('user'));
-    const isHR = user?.role === 'recruiter' || user?.role === 'admin';
+    const isHR = user?.role === 'recruiter' || user?.role === 'admin' || user?.role === 'hr';
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);

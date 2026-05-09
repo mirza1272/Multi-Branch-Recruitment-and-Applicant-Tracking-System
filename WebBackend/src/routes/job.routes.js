@@ -75,7 +75,7 @@ router.patch(
 router.delete(
   "/:jobId",
   verifyJWT,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "recruiter"),
   deleteJob
 );
 

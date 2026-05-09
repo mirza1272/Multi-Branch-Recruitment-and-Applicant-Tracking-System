@@ -159,7 +159,7 @@ const PostJob = () => {
                             </div>
 
                             <div>
-                                <label style={labelS}>Required Experience</label>
+                                <label style={labelS}>Required Experience (in years)</label>
                                 <input required type="text" name="experience" value={formData.experience} onChange={handleChange} placeholder="e.g. 3+ Years" style={inputS} />
                             </div>
 
