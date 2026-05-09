@@ -39,11 +39,9 @@ function Login() {
             }
             window.dispatchEvent(new Event('auth-change'));
 
-            if (user.role === 'admin' || user.role === 'recruiter') {
-                navigate('/hr-dashboard');
-            } else {
-                navigate('/');
-            }
+            // Navigate all users to Home ('/') after login
+            // Home.jsx handles showing the correct view (Home or HRHome) based on role
+            navigate('/');
         } catch (err) {
             console.error(err);
             setError(err.response?.data?.message || err.message || 'Unable to sign in. Please check your credentials.');
