@@ -3,7 +3,7 @@ import { Application } from "../models/application.models.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import { sendInterviewScheduledEmail } from "../utils/mailer.js";
+import { sendInterviewScheduledEmail, sendInterviewNotificationToHR } from "../utils/mailer.js";
 
 import { createCalendarEvent } from "../utils/googleCalendar.js";
 
@@ -29,7 +29,7 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
     try {
       const tokens = { refresh_token: process.env.GOOGLE_REFRESH_TOKEN };
       console.log("📅 Generating Unique Meet Link using Admin Account...");
-      
+
       const event = await createCalendarEvent(tokens, {
         title: application.jobId.title,
         candidateEmail: application.userId.email,
@@ -62,6 +62,7 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
   console.log(`📧 Sending email with link: ${finalMeetingLink}`);
 
   // Send email notification
+  // Send email notification to Candidate
   sendInterviewScheduledEmail({
     to: application.userId.email,
     name: application.userId.name,
@@ -72,6 +73,18 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
     type,
     meetingLink: finalMeetingLink,
   }).catch((e) => console.error("❌ Email sending failed:", e.message));
+
+  // Send copy to HR/Recruiter (Logged in user)
+  sendInterviewNotificationToHR({
+    to: req.user.email,
+    hrName: req.user.name,
+    candidateName: application.userId.name,
+    jobTitle: application.jobId.title,
+    date,
+    time,
+    type,
+    meetingLink: finalMeetingLink,
+  }).catch((e) => console.error("❌ HR Notification failed:", e.message));
 
   return res.status(201).json(new ApiResponse(201, { interview }, "Interview scheduled successfully"));
 });

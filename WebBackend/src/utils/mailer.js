@@ -257,3 +257,31 @@ export const sendInterviewScheduledEmail = async ({ to, name, jobTitle, date, ti
   `);
   await sendEmail({ to, subject: EMAIL_SUBJECTS.INTERVIEW_SCHEDULED, html, useInterviewEmail: true });
 };
+
+/**
+ * Notify HR/Recruiter: interview scheduled (Copy for HR)
+ */
+export const sendInterviewNotificationToHR = async ({ to, hrName, candidateName, jobTitle, date, time, type, meetingLink }) => {
+  const formattedDate = new Date(date).toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const html = baseLayout(`
+    <h2 style="color: #333;">Hello ${hrName},</h2>
+    <p>You have successfully scheduled an interview for <strong>${candidateName}</strong> for the <strong>${jobTitle}</strong> position.</p>
+    <div style="background: #fdf2f2; border-left: 4px solid #dc2626; padding: 16px; margin: 20px 0; border-radius: 4px;">
+      <p style="margin: 0;"><strong>👤 Candidate:</strong> ${candidateName}</p>
+      <p style="margin: 8px 0 0;"><strong>📅 Date:</strong> ${formattedDate}</p>
+      ${time ? `<p style="margin: 8px 0 0;"><strong>⏰ Time:</strong> ${time}</p>` : ""}
+      <p style="margin: 8px 0 0;"><strong>💻 Type:</strong> ${type}</p>
+      ${meetingLink ? `<p style="margin: 8px 0 0;"><strong>🔗 Meeting Link:</strong> <a href="${meetingLink}">${meetingLink}</a></p>` : ""}
+    </div>
+    <p>This is a confirmation copy for your records. The candidate has also been notified.</p>
+    <br/>
+    <p style="color: #555;">Best regards,<br/>HRConnect System</p>
+  `);
+  await sendEmail({ to, subject: `HR Notification: Interview Scheduled - ${candidateName}`, html, useInterviewEmail: true });
+};
