@@ -161,9 +161,10 @@ export const sendOTP = async ({ to, otp }) => {
       ${otp}
     </div>
     <p style="margin-top: 1rem; color: #555;">This code will expire in 15 minutes.</p>
+    <p style="color: #d32f2f; font-weight: bold; margin-top: 10px;">⚠️ Note: If you do not see the email in your inbox, please check your Spam folder.</p>
     <p style="color: #555;">If you did not request this code, please ignore this email.</p>
     <br/>
-    <p style="color: #555;">Thanks,<br/>ATS Team</p>
+    <p style="color: #555;">Thanks,<br/>HRConnect Team</p>
   `);
 
   await sendEmail({ to, subject: EMAIL_SUBJECTS.OTP_VERIFICATION, html });

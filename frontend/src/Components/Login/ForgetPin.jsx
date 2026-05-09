@@ -27,6 +27,7 @@ function ForgetPin() {
                     </div>
                     <h1 style={{ fontSize:'1.5rem', fontWeight:'800', color:C.text, marginBottom:'0.3rem' }}>Verify Code</h1>
                     <p style={{ fontSize:'0.85rem', color:C.muted }}>Enter the 6-digit code sent to your email.</p>
+                    <p style={{ fontSize:'0.75rem', color:'#F87171', marginTop:'0.5rem', fontWeight:'500' }}>ℹ️ Still no code? Check your <b>Spam folder</b>.</p>
                 </div>
                 <form onSubmit={handleVerifyPin} style={{ display:'flex', flexDirection:'column', gap:'1.25rem' }}>
                     <div>

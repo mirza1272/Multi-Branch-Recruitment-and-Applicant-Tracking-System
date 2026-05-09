@@ -39,6 +39,7 @@ function ForgetPass() {
                     </div>
                     <h1 style={{ fontSize:'1.5rem', fontWeight:'800', color:C.text, marginBottom:'0.3rem' }}>Forgot Password?</h1>
                     <p style={{ fontSize:'0.85rem', color:C.muted }}>Enter your email and we'll send you a reset code.</p>
+                    <p style={{ fontSize:'0.75rem', color:'#F87171', marginTop:'0.5rem', fontWeight:'500' }}>ℹ️ If you don't see the email, please check your <b>Spam folder</b>.</p>
                 </div>
                 <form onSubmit={handleSendCode} style={{ display:'flex', flexDirection:'column', gap:'1.25rem' }}>
                     <div>

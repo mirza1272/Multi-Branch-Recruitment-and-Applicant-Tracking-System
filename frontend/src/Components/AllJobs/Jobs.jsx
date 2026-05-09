@@ -28,7 +28,7 @@ function Jobs() {
     const [minSalary, setMinSalary] = useState(0);
     const [sortBy, setSortBy] = useState("Latest");
     const [currentPage, setCurrentPage] = useState(1);
-    
+
     // Fetch state
     const [jobs, setJobs] = useState([]);
     const [totalJobs, setTotalJobs] = useState(0);
@@ -102,7 +102,7 @@ function Jobs() {
                 if (minSalary > 0) params.minSalary = minSalary;
 
                 const response = await getJobsRequest(params);
-                
+
                 setJobs(response.data.data.jobs || []);
                 setTotalJobs(response.data.data.pagination?.total || 0);
             } catch (err) {
@@ -124,6 +124,18 @@ function Jobs() {
 
     return (
         <div className="animate-fade-in" style={{ background: C.bg, minHeight: '100vh', color: C.text }}>
+            <style>
+                {`
+                @media (max-width: 768px) {
+                    .jobs-header-h1 { font-size: 1.75rem !important; }
+                    .jobs-container { flex-direction: column !important; }
+                    .jobs-sidebar { width: 100% !important; margin-bottom: 2rem !important; }
+                    .job-card { flex-direction: column !important; align-items: flex-start !important; gap: 1rem !important; }
+                    .job-card-btn { width: 100% !important; }
+                    .pagination-row { flex-wrap: wrap !important; gap: 0.75rem !important; }
+                }
+                `}
+            </style>
 
             {/* Page Header */}
             <div style={{
@@ -137,16 +149,16 @@ function Jobs() {
             }}>
                 <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px)', backgroundSize: '36px 36px', pointerEvents: 'none' }} />
                 <div style={{ position: 'relative', zIndex: 1 }} className="reveal">
-                    <h1 style={{ fontSize: '2.25rem', fontWeight: '800', color: C.text, marginBottom: '0.5rem' }}>Jobs Directory</h1>
+                    <h1 className="jobs-header-h1" style={{ fontSize: '2.25rem', fontWeight: '800', color: C.text, marginBottom: '0.5rem' }}>Jobs Directory</h1>
                     <p style={{ color: C.muted, fontSize: '0.9rem' }}>Browse all open positions across our branches and departments</p>
                 </div>
             </div>
 
             <div className="max-w-7xl mx-auto px-4 py-10">
-                <div className="flex flex-col md:flex-row md:flex-wrap" style={{ gap: '2rem' }}>
+                <div className="flex flex-col md:flex-row md:flex-wrap jobs-container" style={{ gap: '2rem' }}>
 
                     {/* Sidebar */}
-                    <aside className="w-full md:w-[260px] flex-shrink-0 reveal-left">
+                    <aside className="w-full md:w-[260px] flex-shrink-0 reveal-left jobs-sidebar">
                         <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '1.5rem', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
                             <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: C.text, marginBottom: '1.5rem' }}>Search & Filter</h3>
 
@@ -213,9 +225,9 @@ function Jobs() {
                                 <p style={{ color: C.muted }}>Loading jobs...</p>
                             </div>
                         )}
-                        
+
                         {!loading && jobs.length > 0 ? jobs.map((job, index) => (
-                            <div key={job._id} className="glass-card reveal" style={{ padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap', transitionDelay: `${index * 0.1}s` }}>
+                            <div key={job._id} className="glass-card reveal job-card" style={{ padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap', transitionDelay: `${index * 0.1}s` }}>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
                                         <h3 style={{ fontSize: '1rem', fontWeight: '700', color: C.text }}>{job.title}</h3>
@@ -237,7 +249,7 @@ function Jobs() {
                                         ))}
                                     </div>
                                 </div>
-                                <button onClick={() => navigate(`/job-details/${job._id}`)} className="btn-primary" style={{ padding: '0.5rem 1.25rem', fontSize: '0.8rem', flexShrink: 0 }}>Job Details</button>
+                                <button onClick={() => navigate(`/job-details/${job._id}`)} className="btn-primary job-card-btn" style={{ padding: '0.5rem 1.25rem', fontSize: '0.8rem', flexShrink: 0 }}>Job Details</button>
                             </div>
                         )) : !loading && (
                             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '4rem', textAlign: 'center' }}>
@@ -247,7 +259,7 @@ function Jobs() {
 
                         {/* Pagination */}
                         {totalPages > 1 && (
-                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '2.5rem' }}>
+                            <div className="pagination-row" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '2.5rem' }}>
                                 {[...Array(totalPages)].map((_, i) => (
                                     <button key={i} onClick={() => setCurrentPage(i + 1)}
                                         style={{

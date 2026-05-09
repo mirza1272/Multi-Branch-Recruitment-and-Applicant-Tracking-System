@@ -44,6 +44,18 @@ function ContactUs() {
 
     return (
         <div style={{ background: C.bg, color: C.text, minHeight: '100vh' }}>
+            <style>
+                {`
+                @media (max-width: 768px) {
+                    .contact-hero-h1 { font-size: 2.25rem !important; }
+                    .contact-main-grid { grid-template-columns: 1fr !important; gap: 3rem !important; padding: 3rem 1.5rem !important; }
+                    .contact-info-grid { grid-template-columns: 1fr !important; }
+                    .contact-form-card { padding: 1.5rem !important; }
+                    .contact-form-names { grid-template-columns: 1fr !important; }
+                    .contact-map { height: 300px !important; margin-top: 3rem !important; }
+                }
+                `}
+            </style>
 
             {/* Hero Section */}
             <div className="animate-fade-in" style={{ height: '350px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -53,13 +65,13 @@ function ContactUs() {
                     style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.3) contrast(1.1)' }}
                 />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(15,23,42,0.1) 0%, rgba(15,23,42,0.95) 100%)' }}></div>
-                <div className="animate-fade-in-up" style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-                    <h1 style={{ fontSize: '3.5rem', fontWeight: '900', letterSpacing: '-0.03em', textShadow: '0 4px 30px rgba(0,0,0,0.5)' }}>Contact <span style={{ color: C.primary }}>Us</span></h1>
+                <div className="animate-fade-in-up" style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '0 1rem' }}>
+                    <h1 className="contact-hero-h1" style={{ fontSize: '3.5rem', fontWeight: '900', letterSpacing: '-0.03em', textShadow: '0 4px 30px rgba(0,0,0,0.5)' }}>Contact <span style={{ color: C.primary }}>Us</span></h1>
                 </div>
             </div>
 
-            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '6rem 1.5rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '5rem', alignItems: 'flex-start' }}>
+            <div className="contact-main-grid" style={{ maxWidth: '1200px', margin: '0 auto', padding: '6rem 1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '5rem', alignItems: 'flex-start' }}>
 
                     {/* Left Side: Contact Info */}
                     <div className="reveal-left">
@@ -74,7 +86,7 @@ function ContactUs() {
                             Have questions about our platform or need assistance with your recruitment process? Our team is here to help you succeed every step of the way.
                         </p>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="contact-info-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                             <ContactInfoItem icon={<PhoneIcon />} label="Call for inquiry" val="+1 (212) 555-0198" />
                             <ContactInfoItem icon={<MailIcon />} label="Send us email" val="support@hrconnect.com" />
                             <ContactInfoItem icon={<ClockIcon />} label="Opening hours" val="Mon - Fri: 09AM - 06PM" />
@@ -83,14 +95,14 @@ function ContactUs() {
                     </div>
 
                     {/* Right Side: Contact Form */}
-                    <div className="glass-card reveal-right" style={{ padding: '3rem', borderRadius: '24px' }}>
+                    <div className="glass-card reveal-right contact-form-card" style={{ padding: '3rem', borderRadius: '24px' }}>
                         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
                             <h3 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '0.5rem' }}>Contact Info</h3>
                             <p style={{ color: C.muted, fontSize: '0.9rem' }}>Fill out the form below and we'll get back to you shortly.</p>
                         </div>
 
                         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div className="contact-form-names" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <div>
                                     <label style={labelS}>First Name</label>
                                     <input type="text" placeholder="Your name" style={inputS} value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} required />
@@ -116,7 +128,7 @@ function ContactUs() {
                 </div>
 
                 {/* Map Section */}
-                <div className="reveal" style={{ marginTop: '6rem', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${C.border}`, height: '450px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
+                <div className="reveal contact-map" style={{ marginTop: '6rem', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${C.border}`, height: '450px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
                     <iframe
                         title="New York Office Map"
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d193595.15830869428!2d-74.119763973046!3d40.69766374874431!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2s!4v1699266000000!5m2!1sen!2s"
