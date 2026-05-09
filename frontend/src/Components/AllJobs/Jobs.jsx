@@ -75,6 +75,7 @@ function Jobs() {
 
                 if (branch !== "All") params.branchId = branch;
                 if (department !== "All") params.category = department;
+                if (minSalary > 0) params.minSalary = minSalary;
 
                 const response = await getJobsRequest(params);
                 
@@ -90,7 +91,7 @@ function Jobs() {
         };
 
         fetchJobs();
-    }, [searchTerm, branch, department, currentPage]);
+    }, [searchTerm, branch, department, minSalary, currentPage]);
 
     const totalPages = Math.ceil(totalJobs / 6);
 

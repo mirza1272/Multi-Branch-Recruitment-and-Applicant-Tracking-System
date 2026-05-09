@@ -12,6 +12,7 @@ import {
   sendShortlistedEmail,
   sendRejectedEmail,
   sendAcceptedEmail,
+  sendInterviewScheduledEmail,
 } from "../utils/mailer.js";
 
 // ─────────────────────────────────────────────
@@ -21,7 +22,7 @@ import {
 // ─────────────────────────────────────────────
 export const applyForJob = asyncHandler(async (req, res) => {
   try {
-    const { 
+    const {
       jobId,
       firstName,
       lastName,
@@ -196,7 +197,7 @@ export const getAllApplications = asyncHandler(async (req, res) => {
   const { jobId, status, page = 1, limit = 20 } = req.query;
 
   const filter = {};
-  
+
   // If user is a Recruiter, they should only see applications for THEIR jobs
   if (req.user.role === "recruiter") {
     const myJobs = await Job.find({ createdBy: req.user._id }).select("_id");
@@ -272,7 +273,7 @@ export const getApplicationById = asyncHandler(async (req, res) => {
 // ─────────────────────────────────────────────
 export const updateApplicationStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
-  const validStatuses = ["pending", "shortlisted", "rejected", "accepted"];
+  const validStatuses = ["pending", "shortlisted", "interview scheduled", "rejected", "accepted"];
 
   if (!validStatuses.includes(status)) {
     throw new ApiError(400, `Invalid status. Must be one of: ${validStatuses.join(", ")}`);
@@ -302,6 +303,16 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
     sendAcceptedEmail({ ...emailData, branchName: "Head Office" }).catch((e) =>
       console.error("Email error:", e.message)
     );
+  } else if (status === "interview scheduled") {
+    // Try to find if an interview was already scheduled in the Interview model
+    Interview.findOne({ applicationId: application._id }).then((interview) => {
+      sendInterviewScheduledEmail({
+        ...emailData,
+        date: interview?.date || new Date(Date.now() + 24 * 60 * 60 * 1000), // Default to tomorrow
+        time: interview?.time || "",
+        message: interview?.message || "Our team will contact you with more details shortly.",
+      });
+    }).catch((e) => console.error("Email error:", e.message));
   }
 
   return res.status(200).json(new ApiResponse(200, { application }, `Application ${status}`));

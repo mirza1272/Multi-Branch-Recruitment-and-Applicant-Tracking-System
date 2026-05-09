@@ -65,6 +65,13 @@ export const createJob = asyncHandler(async (req, res) => {
     finalCompany = req.user.company;
   }
 
+  // Extract numeric salary if not provided
+  let finalSalaryNumeric = salaryNumeric ? Number(salaryNumeric) : null;
+  if (finalSalaryNumeric === null && salary) {
+    const extracted = salary.match(/\d+/);
+    if (extracted) finalSalaryNumeric = Number(extracted[0]);
+  }
+
   const jobData = {
     branchId,
     title: title.trim(),
@@ -75,7 +82,7 @@ export const createJob = asyncHandler(async (req, res) => {
     category,
     type,
     salary: salary ? salary.trim() : null,
-    salaryNumeric: salaryNumeric ? Number(salaryNumeric) : null,
+    salaryNumeric: finalSalaryNumeric,
     experience: experience.trim(),
     degree: degree.trim(),
     seats: seats ? Number(seats) : 1,
@@ -105,6 +112,7 @@ export const getAllJobs = asyncHandler(async (req, res) => {
     department,
     category,
     type,
+    minSalary,
     page = 1,
     limit = 10,
     sortBy = "postedAt",
@@ -133,6 +141,10 @@ export const getAllJobs = asyncHandler(async (req, res) => {
 
   if (type) {
     filter.type = type;
+  }
+
+  if (minSalary) {
+    filter.salaryNumeric = { $gte: Number(minSalary) };
   }
 
   if (search) {
@@ -411,6 +423,12 @@ export const updateJob = asyncHandler(async (req, res) => {
       sanitizedUpdates[field] = typeof updates[field] === "string" ? updates[field].trim() : updates[field];
     }
   });
+
+  // Extract numeric salary if display salary was updated but numeric wasn't
+  if (sanitizedUpdates.salary && !sanitizedUpdates.salaryNumeric) {
+    const extracted = sanitizedUpdates.salary.match(/\d+/);
+    if (extracted) sanitizedUpdates.salaryNumeric = Number(extracted[0]);
+  }
 
   if (Object.keys(sanitizedUpdates).length === 0) {
     throw new ApiError(400, "No valid fields to update");

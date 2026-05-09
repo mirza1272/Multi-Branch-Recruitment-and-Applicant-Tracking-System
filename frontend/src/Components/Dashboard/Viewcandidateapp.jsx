@@ -13,7 +13,7 @@ const C = {
     border: '#334155'
 };
 
-const STATUSES = ["pending", "shortlisted", "rejected", "accepted"];
+import { STATUSES } from "../../Constants";
 
 const ViewCandidateApp = () => {
     const { id } = useParams();

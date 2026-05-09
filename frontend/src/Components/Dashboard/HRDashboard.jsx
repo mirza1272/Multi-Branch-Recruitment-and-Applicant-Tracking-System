@@ -71,6 +71,7 @@ const HRDashboard = () => {
     const stats = [
         { label: 'Total Apps', value: applications.length, color: C.primary },
         { label: 'Shortlisted', value: applications.filter(a => a.status === 'shortlisted').length, color: C.accent },
+        { label: 'Interviews', value: applications.filter(a => a.status === 'interview scheduled').length, color: '#8B5CF6' },
         { label: 'Accepted', value: applications.filter(a => a.status === 'accepted').length, color: '#F59E0B' },
         { label: 'Pending', value: applications.filter(a => a.status === 'pending').length, color: '#A855F7' }
     ];
@@ -145,8 +146,8 @@ const HRDashboard = () => {
                                             <td style={tdS}>
                                                 <span style={{
                                                     padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase',
-                                                    background: app.status === 'shortlisted' ? 'rgba(34,197,94,0.1)' : app.status === 'rejected' ? 'rgba(239,68,68,0.1)' : app.status === 'accepted' ? 'rgba(245,158,11,0.1)' : 'rgba(59,130,246,0.1)',
-                                                    color: app.status === 'shortlisted' ? C.accent : app.status === 'rejected' ? C.error : app.status === 'accepted' ? '#F59E0B' : C.primary
+                                                    background: app.status === 'shortlisted' ? 'rgba(34,197,94,0.1)' : app.status === 'interview scheduled' ? 'rgba(139,92,246,0.1)' : app.status === 'rejected' ? 'rgba(239,68,68,0.1)' : app.status === 'accepted' ? 'rgba(245,158,11,0.1)' : 'rgba(59,130,246,0.1)',
+                                                    color: app.status === 'shortlisted' ? C.accent : app.status === 'interview scheduled' ? '#8B5CF6' : app.status === 'rejected' ? C.error : app.status === 'accepted' ? '#F59E0B' : C.primary
                                                 }}>
                                                     {app.status}
                                                 </span>
