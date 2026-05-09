@@ -78,12 +78,13 @@ const sendWithRetry = async (transp, options, retries = 3, delay = 2000) => {
  * Uses SendGrid API if SENDGRID_API is present, otherwise falls back to Gmail
  */
 export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }) => {
-  const fromEmail = useInterviewEmail ? process.env.INTERVIEW_GMAIL_USER : process.env.EMAIL_USER;
+  // 🔥 Consolidating everything to use the Interview email account as requested
+  const fromEmail = process.env.INTERVIEW_GMAIL_USER;
 
   // 💎 PRIMARY: SendGrid API (Best for Render, sends to ANYONE without domain)
   if (process.env.SENDGRID_API) {
     console.log(`🚀 Using SendGrid API for ${to}`);
-    
+
     fetch("https://api.sendgrid.com/v3/mail/send", {
       method: "POST",
       headers: {
@@ -92,26 +93,26 @@ export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }
       },
       body: JSON.stringify({
         personalizations: [{ to: [{ email: to }] }],
-        from: { 
-          email: fromEmail, 
-          name: "HRConnect Team" 
+        from: {
+          email: fromEmail,
+          name: "HRConnect Team"
         },
         subject: subject,
-        content: [{ 
-          type: "text/html", 
-          value: html 
+        content: [{
+          type: "text/html",
+          value: html
         }]
       })
     })
-    .then(async (res) => {
-      if (res.status === 202) {
-        console.log("✅ SendGrid success!");
-      } else {
-        const errorData = await res.json();
-        console.error("❌ SendGrid error details:", JSON.stringify(errorData, null, 2));
-      }
-    })
-    .catch(e => console.error("❌ SendGrid fetch error:", e.message));
+      .then(async (res) => {
+        if (res.status === 202) {
+          console.log("✅ SendGrid success!");
+        } else {
+          const errorData = await res.json();
+          console.error("❌ SendGrid error details:", JSON.stringify(errorData, null, 2));
+        }
+      })
+      .catch(e => console.error("❌ SendGrid fetch error:", e.message));
 
     return true; // Return to API instantly
   }
