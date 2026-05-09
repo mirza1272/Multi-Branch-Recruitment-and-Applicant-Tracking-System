@@ -256,17 +256,35 @@ function Jobs() {
                         {/* Pagination */}
                         {totalPages > 1 && (
                             <div className="pagination-row" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '2.5rem' }}>
-                                {[...Array(totalPages)].map((_, i) => (
-                                    <button key={i} onClick={() => setCurrentPage(i + 1)}
-                                        style={{
-                                            width: '36px', height: '36px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer', border: '1.5px solid', transition: 'all 0.2s',
-                                            background: currentPage === i + 1 ? C.primary : C.card,
-                                            color: currentPage === i + 1 ? '#FFFFFF' : C.muted,
-                                            borderColor: currentPage === i + 1 ? C.primary : C.border
-                                        }}>
-                                        {i + 1}
+                                {currentPage > 1 && (
+                                    <button onClick={() => setCurrentPage(currentPage - 1)}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0 1rem', height: '36px', borderRadius: '8px', background: C.card, border: `1.5px solid ${C.border}`, color: C.muted, fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}>
+                                        ← Previous
                                     </button>
-                                ))}
+                                )}
+
+                                {(() => {
+                                    let start = Math.max(1, currentPage - 1);
+                                    let end = Math.min(totalPages, start + 2);
+                                    if (end === totalPages) start = Math.max(1, end - 2);
+
+                                    const pages = [];
+                                    for (let i = start; i <= end; i++) {
+                                        pages.push(
+                                            <button key={i} onClick={() => setCurrentPage(i)}
+                                                style={{
+                                                    width: '36px', height: '36px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer', border: '1.5px solid', transition: 'all 0.2s',
+                                                    background: currentPage === i ? C.primary : C.card,
+                                                    color: currentPage === i ? '#FFFFFF' : C.muted,
+                                                    borderColor: currentPage === i ? C.primary : C.border
+                                                }}>
+                                                {i}
+                                            </button>
+                                        );
+                                    }
+                                    return pages;
+                                })()}
+
                                 {currentPage < totalPages && (
                                     <button onClick={() => setCurrentPage(currentPage + 1)}
                                         style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0 1rem', height: '36px', borderRadius: '8px', background: C.card, border: `1.5px solid ${C.border}`, color: C.muted, fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}>
