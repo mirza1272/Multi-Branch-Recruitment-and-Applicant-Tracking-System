@@ -9,9 +9,10 @@ function ForgetPin() {
 
     const handleVerifyPin = (e) => {
         e.preventDefault();
-        // Backend integration point: call API to verify PIN
-        console.log("Verifying PIN:", pin);
-        navigate('/change-password');
+        if (pin.length === 6) {
+            sessionStorage.setItem("resetOtp", pin);
+            navigate('/change-password');
+        }
     };
 
     return (

@@ -91,16 +91,25 @@ const ViewCandidateApp = () => {
                                 <p style={{ color: C.primary, fontWeight: '700' }}>Applied for: {application.jobId?.title}</p>
                             </div>
                         </div>
-                        <div style={{ textAlign: 'right' }}>
-                            <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: C.muted, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Current Status</label>
-                            <select
-                                value={status}
-                                onChange={(e) => handleStatusUpdate(e.target.value)}
-                                style={{ background: C.bg, color: C.text, border: `1.5px solid ${C.primary}`, borderRadius: '10px', padding: '0.6rem 1rem', fontSize: '0.9rem', fontWeight: '700', outline: 'none', textTransform: 'capitalize' }}>
-                                {STATUSES.map(s => (
-                                    <option key={s} value={s}>{s}</option>
-                                ))}
-                            </select>
+                        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'flex-end' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '800', color: C.muted, textTransform: 'uppercase', marginBottom: '0.5rem' }}>Current Status</label>
+                                <select
+                                    value={status}
+                                    onChange={(e) => handleStatusUpdate(e.target.value)}
+                                    style={{ background: C.bg, color: C.text, border: `1.5px solid ${C.primary}`, borderRadius: '10px', padding: '0.6rem 1rem', fontSize: '0.9rem', fontWeight: '700', outline: 'none', textTransform: 'capitalize' }}>
+                                    {STATUSES.map(s => (
+                                        <option key={s} value={s}>{s}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <button
+                                onClick={() => navigate(`/schedule-interview/${id}`)}
+                                style={{ background: '#8B5CF6', color: '#fff', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '12px', fontSize: '0.9rem', fontWeight: '800', cursor: 'pointer', transition: '0.3s', boxShadow: '0 10px 20px rgba(139,92,246,0.2)' }}
+                                onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
+                                onMouseLeave={e => e.target.style.transform = 'translateY(0)'}>
+                                📅 Schedule Interview
+                            </button>
                         </div>
                     </div>
 

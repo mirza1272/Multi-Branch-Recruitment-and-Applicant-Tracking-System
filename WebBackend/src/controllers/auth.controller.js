@@ -4,6 +4,7 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { generateTokenAndSetCookie } from "../utils/generateToken.js";
 import { sendOTP } from "../utils/mailer.js";
+import { getAuthUrl, getTokensFromCode } from "../utils/googleCalendar.js";
 
 // ─────────────────────────────────────────────
 // @route   POST /api/auth/register
@@ -49,7 +50,7 @@ export const register = asyncHandler(async (req, res) => {
   try {
     await sendOTP({ to: email, otp });
   } catch (error) {
-    await User.deleteOne({ _id: user._id }).catch(() => {});
+    await User.deleteOne({ _id: user._id }).catch(() => { });
     console.error("Email send nahi ho saki:", error.message);
     return res.status(500).json({ message: "Email sending failed" });
   }
@@ -225,4 +226,90 @@ export const updateProfile = asyncHandler(async (req, res) => {
   });
 
   return res.status(200).json(new ApiResponse(200, { user }, "Profile updated"));
+});
+
+// ─────────────────────────────────────────────
+// @route   POST /api/auth/forgot-password
+// @access  Public
+// ─────────────────────────────────────────────
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) throw new ApiError(400, "Email is required");
+
+  const user = await User.findOne({ email });
+  if (!user) throw new ApiError(404, "User with this email does not exist");
+
+  const otp = generateOtp();
+  user.otpCode = otp;
+  user.otpExpiresAt = Date.now() + 15 * 60 * 1000;
+  await user.save();
+
+  try {
+    await sendOTP({ to: email, otp });
+  } catch (error) {
+    console.error("Forgot password email error:", error.message);
+    throw new ApiError(500, "Failed to send reset code. Please try again later.");
+  }
+
+  return res.status(200).json(new ApiResponse(200, null, "Reset code sent to your email"));
+});
+
+// ─────────────────────────────────────────────
+// @route   POST /api/auth/reset-password
+// @access  Public
+// ─────────────────────────────────────────────
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  if (!email || !otp || !newPassword) {
+    throw new ApiError(400, "Email, code, and new password are required");
+  }
+
+  const user = await User.findOne({ email }).select("+otpCode +otpExpiresAt");
+  if (!user) throw new ApiError(404, "User not found");
+
+  if (!user.otpCode || user.otpCode !== otp) {
+    throw new ApiError(400, "Invalid reset code");
+  }
+
+  if (!user.otpExpiresAt || user.otpExpiresAt < Date.now()) {
+    throw new ApiError(400, "Reset code expired. Please request a new one.");
+  }
+
+  user.password = newPassword;
+  user.otpCode = undefined;
+  user.otpExpiresAt = undefined;
+  await user.save();
+
+  return res.status(200).json(new ApiResponse(200, null, "Password reset successfully"));
+});
+
+export const getGoogleAuthUrl = asyncHandler(async (req, res) => {
+  const url = getAuthUrl();
+  return res.status(200).json(new ApiResponse(200, { url }, "Google Auth URL generated"));
+});
+
+export const googleAuthCallback = asyncHandler(async (req, res) => {
+  const { code } = req.query;
+  if (!code) throw new ApiError(400, "Code is required");
+
+  const tokens = await getTokensFromCode(code);
+
+  // In a real app, you'd store tokens in the DB for the current user (HR)
+  console.log("✅ Google Tokens:", tokens);
+
+  res.send(`
+    <div style="font-family: sans-serif; padding: 50px; text-align: center; background: #0F172A; color: #F1F5F9; min-height: 100vh;">
+      <h1 style="color: #3B82F6;">Authentication Successful!</h1>
+      <p>Google Calendar has been connected. You can now close this window.</p>
+      <div style="background: #1E293B; padding: 20px; border-radius: 10px; margin-top: 20px; text-align: left; display: inline-block;">
+        <p style="color: #94A3B8; font-size: 0.8rem; margin-bottom: 10px;">Refresh Token (Save this in your .env as GOOGLE_REFRESH_TOKEN if it doesn't auto-save):</p>
+        <code style="word-break: break-all; color: #22C55E;">${tokens.refresh_token || "Already have one / check console"}</code>
+      </div>
+    </div>
+  `);
+});
+export const checkGoogleConnection = asyncHandler(async (req, res) => {
+  const isConnected = !!process.env.GOOGLE_REFRESH_TOKEN;
+  return res.status(200).json(new ApiResponse(200, { isConnected }, "Connection status fetched"));
 });

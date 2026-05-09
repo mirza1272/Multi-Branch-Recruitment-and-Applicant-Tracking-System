@@ -5,12 +5,14 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { sendInterviewScheduledEmail } from "../utils/mailer.js";
 
+import { createCalendarEvent } from "../utils/googleCalendar.js";
+
 // ─────────────────────────────────────────────
 // @route   POST /api/interviews
 // @access  Admin, Recruiter
 // ─────────────────────────────────────────────
 export const scheduleInterview = asyncHandler(async (req, res) => {
-  const { applicationId, date, time, message } = req.body;
+  const { applicationId, date, time, message, type, meetingLink } = req.body;
 
   if (!applicationId || !date) {
     throw new ApiError(400, "Application ID and date are required");
@@ -20,30 +22,46 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
     .populate("userId", "name email")
     .populate({ path: "jobId", select: "title" });
 
-  if (!application) throw new ApiError(404, "Application not found");
+  let finalMeetingLink = meetingLink;
 
-  // Only shortlisted applications should be interviewed
-  if (!["shortlisted", "pending"].includes(application.status)) {
-    throw new ApiError(
-      400,
-      "Interview can only be scheduled for pending or shortlisted applications"
-    );
+  // STEP 1: Use Master Admin Token from .env to generate Unique Meet Link
+  if (process.env.GOOGLE_REFRESH_TOKEN && process.env.GOOGLE_REFRESH_TOKEN !== "1") {
+    try {
+      const tokens = { refresh_token: process.env.GOOGLE_REFRESH_TOKEN };
+      console.log("📅 Generating Unique Meet Link using Admin Account...");
+      
+      const event = await createCalendarEvent(tokens, {
+        title: application.jobId.title,
+        candidateEmail: application.userId.email,
+        date,
+        time,
+        type,
+      });
+
+      if (event.hangoutLink) {
+        finalMeetingLink = event.hangoutLink;
+        console.log("✅ Unique Link Generated:", finalMeetingLink);
+      }
+    } catch (err) {
+      console.error("❌ Google API Error:", err.message);
+      // Fallback if token fails
+    }
   }
 
-  // Upsert: if an interview already exists for this application, update it
+  // Upsert interview record
   const interview = await Interview.findOneAndUpdate(
     { applicationId },
-    { date, time, message },
+    { date, time, message, type, meetingLink: finalMeetingLink },
     { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
   );
 
-  // Automatically move application to shortlisted if still pending
-  if (application.status === "pending") {
-    application.status = "shortlisted";
-    await application.save();
-  }
+  // Update application status
+  application.status = "interview scheduled";
+  await application.save();
 
-  // Send email notification (non-blocking)
+  console.log(`📧 Sending email with link: ${finalMeetingLink}`);
+
+  // Send email notification
   sendInterviewScheduledEmail({
     to: application.userId.email,
     name: application.userId.name,
@@ -51,9 +69,11 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
     date,
     time,
     message,
-  }).catch((e) => console.error("Email error:", e.message));
+    type,
+    meetingLink: finalMeetingLink,
+  }).catch((e) => console.error("❌ Email sending failed:", e.message));
 
-  return res.status(201).json(new ApiResponse(201, { interview }, "Interview scheduled"));
+  return res.status(201).json(new ApiResponse(201, { interview }, "Interview scheduled successfully"));
 });
 
 // ─────────────────────────────────────────────

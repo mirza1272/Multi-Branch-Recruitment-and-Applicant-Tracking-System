@@ -13,6 +13,11 @@ export const CATEGORIES = [
     "HR",
     "Finance",
     "Operations",
+    "Design",
+    "Customer Support",
+    "Product",
+    "Quality Assurance",
+    "Healthcare",
     "Other"
 ];
 

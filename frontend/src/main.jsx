@@ -22,7 +22,8 @@ import {
   TermsPolicies,
   HRDashboard,
   ViewCandidateApp,
-  PostJob
+  PostJob,
+  ScheduleInterview
 } from './index'
 
 const router = createBrowserRouter(
@@ -40,6 +41,7 @@ const router = createBrowserRouter(
       <Route path='applications' element={<Applications />} />
       <Route path='hr-dashboard' element={<HRDashboard />} />
       <Route path='view-application/:id' element={<ViewCandidateApp />} />
+      <Route path='schedule-interview/:id' element={<ScheduleInterview />} />
       <Route path='post-job/:editId?' element={<PostJob />} />
       <Route path='job-details/:id' element={<JobDetails />} />
       <Route path='apply-job/:id' element={<ApplyJob />} />

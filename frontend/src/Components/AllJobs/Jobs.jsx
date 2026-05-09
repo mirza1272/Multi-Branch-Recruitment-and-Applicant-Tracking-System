@@ -18,9 +18,6 @@ const C = {
 const JOBS_PER_PAGE = 6;
 
 function Jobs() {
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, []);
     const navigate = useNavigate();
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
@@ -38,6 +35,33 @@ function Jobs() {
     const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
+    // Intersection Observer for scroll animations
+    useEffect(() => {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('reveal-visible');
+                }
+            });
+        }, observerOptions);
+
+        const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+        revealElements.forEach(el => observer.observe(el));
+
+        return () => {
+            revealElements.forEach(el => observer.unobserve(el));
+        };
+    }, [jobs, loading]); // Re-run when jobs are loaded or loading state changes
 
     // Removed HR redirect so recruiters can view the jobs board
 
@@ -112,7 +136,7 @@ function Jobs() {
                 position: 'relative',
             }}>
                 <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px)', backgroundSize: '36px 36px', pointerEvents: 'none' }} />
-                <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ position: 'relative', zIndex: 1 }} className="reveal">
                     <h1 style={{ fontSize: '2.25rem', fontWeight: '800', color: C.text, marginBottom: '0.5rem' }}>Jobs Directory</h1>
                     <p style={{ color: C.muted, fontSize: '0.9rem' }}>Browse all open positions across our branches and departments</p>
                 </div>
@@ -122,7 +146,7 @@ function Jobs() {
                 <div className="flex flex-col md:flex-row md:flex-wrap" style={{ gap: '2rem' }}>
 
                     {/* Sidebar */}
-                    <aside className="w-full md:w-[260px] flex-shrink-0">
+                    <aside className="w-full md:w-[260px] flex-shrink-0 reveal-left">
                         <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '1.5rem', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
                             <h3 style={{ fontSize: '0.95rem', fontWeight: '700', color: C.text, marginBottom: '1.5rem' }}>Search & Filter</h3>
 
@@ -190,8 +214,8 @@ function Jobs() {
                             </div>
                         )}
                         
-                        {!loading && jobs.length > 0 ? jobs.map(job => (
-                            <div key={job._id} className="glass-card" style={{ padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+                        {!loading && jobs.length > 0 ? jobs.map((job, index) => (
+                            <div key={job._id} className="glass-card reveal" style={{ padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap', transitionDelay: `${index * 0.1}s` }}>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
                                         <h3 style={{ fontSize: '1rem', fontWeight: '700', color: C.text }}>{job.title}</h3>

@@ -6,21 +6,30 @@ const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // Gmail App Password (not your regular password)
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+const interviewTransporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.INTERVIEW_GMAIL_USER,
+    pass: process.env.INTERVIEW_GMAIL_PASS,
   },
 });
 
 /**
  * Core send function
  */
-const sendEmail = async ({ to, subject, html }) => {
+const sendEmail = async ({ to, subject, html, useInterviewEmail = false }) => {
   const mailOptions = {
-    from: `"ATS System" <${process.env.EMAIL_USER}>`,
+    from: `"Recruitment Team" <${useInterviewEmail ? process.env.INTERVIEW_GMAIL_USER : process.env.EMAIL_USER}>`,
     to,
     subject,
     html,
   };
-  await transporter.sendMail(mailOptions);
+  const currentTransporter = useInterviewEmail ? interviewTransporter : transporter;
+  await currentTransporter.sendMail(mailOptions);
 };
 
 // ─────────────────────────────────────────────
@@ -117,7 +126,7 @@ export const sendAcceptedEmail = async ({ to, name, jobTitle, branchName }) => {
 /**
  * Notify candidate: interview scheduled
  */
-export const sendInterviewScheduledEmail = async ({ to, name, jobTitle, date, time, message }) => {
+export const sendInterviewScheduledEmail = async ({ to, name, jobTitle, date, time, message, type, meetingLink }) => {
   const formattedDate = new Date(date).toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -131,11 +140,13 @@ export const sendInterviewScheduledEmail = async ({ to, name, jobTitle, date, ti
     <div style="background: #f0f4ff; border-left: 4px solid #1a73e8; padding: 16px; margin: 20px 0; border-radius: 4px;">
       <p style="margin: 0;"><strong>📅 Date:</strong> ${formattedDate}</p>
       ${time ? `<p style="margin: 8px 0 0;"><strong>⏰ Time:</strong> ${time}</p>` : ""}
+      <p style="margin: 8px 0 0;"><strong>💻 Type:</strong> ${type}</p>
+      ${meetingLink ? `<p style="margin: 8px 0 0;"><strong>🔗 Link:</strong> <a href="${meetingLink}">${meetingLink}</a></p>` : ""}
     </div>
     ${message ? `<p><strong>Additional Message:</strong><br/>${message}</p>` : ""}
     <p>Please make sure to be available at the scheduled time. If you have any questions, contact your HR representative.</p>
     <br/>
     <p style="color: #555;">Best regards,<br/>HR Team</p>
   `);
-  await sendEmail({ to, subject: EMAIL_SUBJECTS.INTERVIEW_SCHEDULED, html });
+  await sendEmail({ to, subject: EMAIL_SUBJECTS.INTERVIEW_SCHEDULED, html, useInterviewEmail: true });
 };
