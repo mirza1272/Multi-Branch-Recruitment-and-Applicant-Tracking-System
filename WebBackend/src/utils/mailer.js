@@ -1,17 +1,31 @@
 import nodemailer from "nodemailer";
 import { EMAIL_SUBJECTS } from "../constants.js";
 
+// Check for required environment variables
+if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  console.warn("⚠️ WARNING: EMAIL_USER or EMAIL_PASS is missing in environment variables!");
+}
+
 // Create reusable transporter
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
-  secure: true, // Use SSL
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
   tls: {
-    rejectUnauthorized: false // Helps with some hosting environments
+    rejectUnauthorized: false
+  }
+});
+
+// Verify transporter connection on startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("❌ Transporter Verification Failed:", error.message);
+  } else {
+    console.log("✅ Mailer is ready to take our messages");
   }
 });
 

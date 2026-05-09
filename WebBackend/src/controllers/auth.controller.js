@@ -247,8 +247,11 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   try {
     await sendOTP({ to: email, otp });
   } catch (error) {
-    console.error("Forgot password email error:", error.message);
-    throw new ApiError(500, "Failed to send reset code. Please try again later.");
+    console.error("❌ Forgot password email error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: `Failed to send reset code: ${error.message}`
+    });
   }
 
   return res.status(200).json(new ApiResponse(200, null, "Reset code sent to your email"));
