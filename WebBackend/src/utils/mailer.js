@@ -70,10 +70,36 @@ const sendWithRetry = async (transp, options, retries = 3, delay = 2000) => {
 
 /**
  * PRODUCTION-GRADE Non-blocking Email function
- * Uses Gmail SMTP with robust Render-specific settings
+ * Uses Resend API if RESEND_API is present, otherwise falls back to Gmail
  */
 export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }) => {
   const fromEmail = useInterviewEmail ? process.env.INTERVIEW_GMAIL_USER : process.env.EMAIL_USER;
+
+  // 💎 PRIMARY: Resend API (Best for Render)
+  if (process.env.RESEND_API && !useInterviewEmail) {
+    console.log(`🚀 Using Resend API for ${to}`);
+    fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.RESEND_API}`
+      },
+      body: JSON.stringify({
+        from: "HRConnect <onboarding@resend.dev>",
+        to: [to],
+        subject,
+        html
+      })
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (res.ok) console.log("✅ Resend Success:", data);
+        else console.error("❌ Resend Error Response:", data);
+      })
+      .catch(e => console.error("❌ Resend Fetch Error:", e.message));
+
+    return true; // Non-blocking
+  }
 
   const mailOptions = {
     from: `"HRConnect Team" <${fromEmail}>`,
@@ -90,7 +116,7 @@ export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }
   sendWithRetry(currentTransporter, mailOptions)
     .catch(err => console.error(`🚨 FATAL: Gmail SMTP failed for ${to}:`, err.message));
 
-  return true; // Return to API instantly
+  return true;
 };
 
 // ─────────────────────────────────────────────
