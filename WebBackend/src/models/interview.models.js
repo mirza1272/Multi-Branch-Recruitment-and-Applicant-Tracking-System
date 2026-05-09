@@ -20,6 +20,15 @@ const interviewSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    type: {
+      type: String,
+      enum: ["Online", "In-Person", "Phone"],
+      default: "Online",
+    },
+    meetingLink: {
+      type: String,
+      trim: true,
+    },
   },
   { timestamps: true }
 );

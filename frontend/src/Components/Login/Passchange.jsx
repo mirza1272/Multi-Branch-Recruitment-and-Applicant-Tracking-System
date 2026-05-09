@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { resetPasswordRequest } from "../../api/api";
 
 const C = { bg:'#0F172A', card:'#1E293B', primary:'#3B82F6', accent:'#22C55E', text:'#F1F5F9', muted:'#94A3B8', border:'#334155', error:'#EF4444' };
 
@@ -10,7 +11,9 @@ function Passchange() {
     const [isSuccess, setIsSuccess]             = useState(false);
     const [error, setError]                     = useState("");
 
-    const handleUpdatePassword = (e) => {
+    const [loading, setLoading] = useState(false);
+
+    const handleUpdatePassword = async (e) => {
         e.preventDefault();
         setError("");
 
@@ -21,10 +24,27 @@ function Passchange() {
         }
 
         if (newPassword !== confirmPassword) { setError("Passwords do not match"); return; }
-        // Backend integration point: call API to update password
-        console.log("Updating password to:", newPassword);
-        setIsSuccess(true);
-        setTimeout(() => navigate('/login'), 3000);
+        
+        const email = sessionStorage.getItem("resetEmail");
+        const otp = sessionStorage.getItem("resetOtp");
+
+        if (!email || !otp) {
+            setError("Session expired. Please start the process again.");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await resetPasswordRequest({ email, otp, newPassword });
+            setIsSuccess(true);
+            sessionStorage.removeItem("resetEmail");
+            sessionStorage.removeItem("resetOtp");
+            setTimeout(() => navigate('/login'), 3000);
+        } catch (err) {
+            setError(err.response?.data?.message || "Failed to update password");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const iStyle = (hasErr) => ({
@@ -72,7 +92,9 @@ function Passchange() {
                             onBlur={e  => { e.target.style.borderColor=error ? C.error : C.border; e.target.style.boxShadow='none'; e.target.style.background=C.bg; }} />
                         {error && <p style={{ color:C.error, fontSize:'0.75rem', fontWeight:'600', marginTop:'0.3rem' }}>{error}</p>}
                     </div>
-                    <button type="submit" className="btn-primary" style={{ width:'100%', padding:'0.75rem' }}>Update Password</button>
+                    <button type="submit" disabled={loading} className="btn-primary" style={{ width:'100%', padding:'0.75rem' }}>
+                        {loading ? "Updating..." : "Update Password"}
+                    </button>
                 </form>
             </div>
         </div>

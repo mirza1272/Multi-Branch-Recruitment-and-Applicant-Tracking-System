@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { forgotPasswordRequest } from "../../api/api";
 
 const C = { bg:'#0F172A', card:'#1E293B', primary:'#3B82F6', text:'#F1F5F9', muted:'#94A3B8', border:'#334155' };
 const MailIcon = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>;
@@ -8,11 +9,22 @@ function ForgetPass() {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
 
-    const handleSendCode = (e) => {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    const handleSendCode = async (e) => {
         e.preventDefault();
-        // Backend integration point: call API to send reset code to email
-        console.log("Sending code to:", email);
-        navigate('/reset-pin');
+        setLoading(true);
+        setError("");
+        try {
+            await forgotPasswordRequest({ email });
+            sessionStorage.setItem("resetEmail", email);
+            navigate('/reset-pin');
+        } catch (err) {
+            setError(err.response?.data?.message || "Failed to send reset code");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -38,8 +50,11 @@ function ForgetPass() {
                                 onFocus={e => { e.target.style.borderColor=C.primary; e.target.style.boxShadow='0 0 0 3px rgba(59,130,246,0.12)'; e.target.style.background=C.card; }}
                                 onBlur={e  => { e.target.style.borderColor=C.border; e.target.style.boxShadow='none'; e.target.style.background=C.bg; }} />
                         </div>
+                        {error && <p style={{ color:'#EF4444', fontSize:'0.75rem', fontWeight:'600', marginTop:'0.3rem' }}>{error}</p>}
                     </div>
-                    <button type="submit" className="btn-primary" style={{ width:'100%', padding:'0.75rem' }}>Send Code</button>
+                    <button type="submit" disabled={loading} className="btn-primary" style={{ width:'100%', padding:'0.75rem' }}>
+                        {loading ? "Sending..." : "Send Code"}
+                    </button>
                 </form>
             </div>
         </div>

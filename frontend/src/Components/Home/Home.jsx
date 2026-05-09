@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { getJobsRequest, getBranchesRequest } from "../../api/api";
+import { CATEGORIES as DEPARTMENTS } from "../../Constants";
 import HRHome from "./HRHome";
 
 const SearchIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>;
@@ -20,19 +21,30 @@ const RECENT_JOBS = [
     { id: 4, title: "District Intranet Director", company: "VonRueden - Weber Co", location: "Florida, USA", salary: "$4200-$4800", type: "Full time", category: "Commerce", timeAgo: "24 min ago", logo: "https://api.dicebear.com/7.x/initials/svg?seed=DI" },
 ];
 const CATEGORIES = [
-    { name: "Agriculture", jobs: "1254 jobs", icon: "🌱" },
-    { name: "Metal Production", jobs: "816 jobs", icon: "⚙️" },
-    { name: "Commerce", jobs: "2082 jobs", icon: "🛍️" },
-    { name: "Construction", jobs: "1528 jobs", icon: "🏗️" },
-    { name: "Hotels & Tourism", jobs: "1022 jobs", icon: "🏨" },
-    { name: "Education", jobs: "1496 jobs", icon: "🎓" },
-    { name: "Financial Services", jobs: "1529 jobs", icon: "💰" },
-    { name: "Transport", jobs: "1244 jobs", icon: "🚚" },
+    { name: "Engineering", icon: "💻" },
+    { name: "Sales", icon: "📈" },
+    { name: "Marketing", icon: "📣" },
+    { name: "HR", icon: "👥" },
+    { name: "Finance", icon: "💵" },
+    { name: "Operations", icon: "⚙️" },
+    { name: "Design", icon: "🎨" },
+    { name: "Customer Support", icon: "🎧" },
+    { name: "Product", icon: "📦" },
+    { name: "Quality Assurance", icon: "🛡️" },
+    { name: "Healthcare", icon: "🏥" },
+    { name: "Other", icon: "✨" },
 ];
 const TESTIMONIALS = [
     { name: "Marco Rihn", text: "Amazing services, they helped me find my dream job within a week!", rating: 5 },
-    { name: "Kristin Heeter", text: "Everything is simple and the clean UI is just stunning.", rating: 5 },
-    { name: "Zion Clarista", text: "Awesome, thank you! The best ATS I've ever used for my career.", rating: 5 },
+    { name: "Kristin Heeter", text: "Everything is simple and the clean UI is just stunning. Best ATS ever.", rating: 5 },
+    { name: "Zion Clarista", text: "Awesome, thank you! The best platform I've ever used for my career.", rating: 5 },
+    { name: "Sarah Jenkins", text: "The hiring process was so smooth. I highly recommend HRConnect!", rating: 5 },
+    { name: "Michael Chen", text: "I found a great opportunity in a branch I didn't even know existed.", rating: 5 },
+    { name: "Aria Rodriguez", text: "The interface is very intuitive and the job recommendations are spot on.", rating: 5 },
+    { name: "David Wilson", text: "Professional and efficient. The direct email pipeline is a game changer.", rating: 4 },
+    { name: "Emily Brown", text: "I love how easy it is to track my applications. Great experience!", rating: 5 },
+    { name: "James Taylor", text: "A must-have for anyone looking to scale their career globally.", rating: 5 },
+    { name: "Olivia Martinez", text: "The categories are so well organized. Found my design job easily.", rating: 5 },
 ];
 
 // ── COLOR CONSTANTS ───────────────────────────────────
@@ -90,13 +102,13 @@ function Home() {
         const skillsArray = user.skills.toLowerCase().split(',').map(s => s.trim()).filter(s => s);
         if (skillsArray.length > 0 && trendingJobs.length > 0) {
             displayedJobs = [...trendingJobs].sort((a, b) => {
-                const aMatch = skillsArray.some(s => 
-                    a.title.toLowerCase().includes(s) || 
+                const aMatch = skillsArray.some(s =>
+                    a.title.toLowerCase().includes(s) ||
                     (a.category && a.category.toLowerCase().includes(s)) ||
                     (a.department && a.department.toLowerCase().includes(s))
                 );
-                const bMatch = skillsArray.some(s => 
-                    b.title.toLowerCase().includes(s) || 
+                const bMatch = skillsArray.some(s =>
+                    b.title.toLowerCase().includes(s) ||
                     (b.category && b.category.toLowerCase().includes(s)) ||
                     (b.department && b.department.toLowerCase().includes(s))
                 );
@@ -104,6 +116,29 @@ function Home() {
             });
         }
     }
+
+    // Intersection Observer for scroll animations
+    React.useEffect(() => {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('reveal-visible');
+                }
+            });
+        }, observerOptions);
+
+        const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+        revealElements.forEach(el => observer.observe(el));
+
+        return () => {
+            revealElements.forEach(el => observer.unobserve(el));
+        };
+    }, [displayedJobs, trendingJobs]); // Corrected dependencies
 
     // Ensure page starts at the top instantly
     React.useEffect(() => {
@@ -174,11 +209,7 @@ function Home() {
                             <select style={{ background: 'transparent', border: 'none', outline: 'none', fontSize: '0.875rem', color: C.text, width: '100%', cursor: 'pointer' }}
                                 value={category} onChange={e => setCategory(e.target.value)}>
                                 <option value="All">Select Department</option>
-                                <option value="Commerce">Commerce</option>
-                                <option value="Tech">Tech</option>
-                                <option value="Design">Design</option>
-                                <option value="Education">Education</option>
-                                <option value="Financial Services">Financial Services</option>
+                                {DEPARTMENTS.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                             </select>
                         </div>
                         <button onClick={handleSearch} className="btn-primary w-full md:w-auto"
@@ -192,7 +223,7 @@ function Home() {
             {/* ── RECENT JOBS ── */}
             <section style={{ background: C.card, padding: '5rem 1rem' }}>
                 <div className="max-w-7xl mx-auto">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+                    <div className="reveal" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
                         <div>
                             <h2 style={{ fontSize: '1.875rem', fontWeight: '800', color: C.text, marginBottom: '0.4rem' }}>{jobSectionTitle}</h2>
                             <p style={{ color: C.muted, fontSize: '0.9rem' }}>{jobSectionSubtitle}</p>
@@ -203,8 +234,8 @@ function Home() {
                         </button>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {displayedJobs.map(job => (
-                            <div key={job._id || job.id} className="glass-card" style={{ padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+                        {displayedJobs.map((job, index) => (
+                            <div key={job._id || job.id} className="glass-card reveal" style={{ padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap', transitionDelay: `${index * 0.1}s` }}>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
                                         <h3 style={{ fontSize: '1rem', fontWeight: '700', color: C.text }}>{job.title}</h3>
@@ -227,20 +258,27 @@ function Home() {
                             </div>
                         ))}
                     </div>
-                 </div>
-             </section>
+                </div>
+            </section>
 
             {/* ── CATEGORIES ── */}
             <section style={{ background: C.bg, padding: '5rem 1rem' }}>
-                <div className="max-w-7xl mx-auto text-center">
+                <div className="max-w-7xl mx-auto text-center reveal">
                     <h2 style={{ fontSize: '1.875rem', fontWeight: '800', color: C.text, marginBottom: '0.4rem' }}>Browse by Category</h2>
                     <p style={{ color: C.muted, marginBottom: '3rem', fontSize: '0.9rem' }}>Explore jobs by specialized industry categories.</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                        {CATEGORIES.map(cat => (
-                            <div key={cat.name} className="glass-card" style={{ padding: '2rem 1.25rem', cursor: 'pointer', textAlign: 'center' }}>
-                                <div style={{ fontSize: '2.2rem', marginBottom: '1rem' }}>{cat.icon}</div>
-                                <h4 style={{ fontWeight: '700', fontSize: '0.9rem', color: C.text, marginBottom: '0.3rem' }}>{cat.name}</h4>
-                                <p style={{ fontSize: '0.75rem', color: C.accent, fontWeight: '600' }}>{cat.jobs}</p>
+                        {CATEGORIES.map((cat, index) => (
+                            <div
+                                key={cat.name}
+                                className="glass-card reveal"
+                                style={{ padding: '2rem 1.25rem', cursor: 'pointer', textAlign: 'center', transition: '0.3s', transitionDelay: `${index * 0.05}s` }}
+                                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'}
+                                onMouseLeave={e => e.currentTarget.style.transform = 'none'}
+                                onClick={() => navigate(`/jobs?department=${cat.name}`)}
+                            >
+                                <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{cat.icon}</div>
+                                <h4 style={{ fontWeight: '700', fontSize: '1rem', color: C.text, marginBottom: '0.3rem' }}>{cat.name}</h4>
+                                <p style={{ fontSize: '0.75rem', color: C.primary, fontWeight: '700' }}>View Openings</p>
                             </div>
                         ))}
                     </div>
@@ -248,12 +286,12 @@ function Home() {
             </section>
 
             {/* ── CTA ── */}
-            <section style={{ background: C.card, padding: '3.5rem 1rem' }}>
+            <section style={{ background: C.card, padding: '3.5rem 1rem', overflow: 'hidden' }}>
                 <div className="max-w-7xl mx-auto" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '3rem', alignItems: 'center' }}>
-                    <div style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', maxHeight: '320px' }}>
+                    <div className="reveal-left" style={{ borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', maxHeight: '320px' }}>
                         <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80" alt="Work" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </div>
-                    <div>
+                    <div className="reveal-right">
                         <h2 style={{ fontSize: '2rem', fontWeight: '800', color: C.text, marginBottom: '1rem', lineHeight: 1.25 }}>Good Life Begins With A Good Company</h2>
                         <p style={{ color: C.muted, marginBottom: '2rem', lineHeight: 1.7, fontSize: '0.9rem' }}>
                             We bridge the gap between world-class companies and top-tier talent. Our platform is designed to make your job search as seamless as possible.
@@ -274,13 +312,16 @@ function Home() {
             </section>
 
             {/* ── TESTIMONIALS ── */}
-            <section style={{ background: C.bg, padding: '5rem 1rem' }}>
-                <div className="max-w-7xl mx-auto text-center">
+            <section className="animate-fade-in" style={{ background: C.bg, padding: '5rem 0', overflow: 'hidden' }}>
+                <div className="max-w-7xl mx-auto text-center px-4 mb-12">
                     <h2 style={{ fontSize: '1.875rem', fontWeight: '800', color: C.text, marginBottom: '0.4rem' }}>Testimonials from Our Customers</h2>
-                    <p style={{ color: C.muted, marginBottom: '3rem', fontSize: '0.9rem' }}>Hear what our users have to say about their experience.</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
-                        {TESTIMONIALS.map((t, i) => (
-                            <div key={i} className="glass-card" style={{ padding: '2rem', textAlign: 'left' }}>
+                    <p style={{ color: C.muted, fontSize: '0.9rem' }}>Hear what our users have to say about their experience.</p>
+                </div>
+
+                <div style={{ position: 'relative', width: '100%' }}>
+                    <div className="animate-marquee">
+                        {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
+                            <div key={i} className="glass-card" style={{ width: '350px', margin: '0 1rem', padding: '2rem', textAlign: 'left', flexShrink: 0 }}>
                                 <div style={{ display: 'flex', color: '#F59E0B', marginBottom: '1rem' }}>
                                     {[...Array(t.rating)].map((_, i) => <span key={i}><StarIcon /></span>)}
                                 </div>

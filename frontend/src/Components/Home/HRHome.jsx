@@ -14,6 +14,29 @@ const C = {
 const HRHome = () => {
     const navigate = useNavigate();
 
+    // Intersection Observer for scroll animations
+    React.useEffect(() => {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('reveal-visible');
+                }
+            });
+        }, observerOptions);
+
+        const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+        revealElements.forEach(el => observer.observe(el));
+
+        return () => {
+            revealElements.forEach(el => observer.unobserve(el));
+        };
+    }, []);
+
     // Ensure page starts at the top instantly
     React.useEffect(() => {
         document.documentElement.style.scrollBehavior = 'auto';
@@ -65,16 +88,19 @@ const HRHome = () => {
                             icon="🌍"
                             title="Global Scale"
                             desc="Manage recruitment across multiple international branches from a single unified interface."
+                            index={0}
                         />
                         <FeatureCard
                             icon="⚡"
                             title="Instant Publishing"
                             desc="Get your job openings live in seconds and start receiving applications immediately."
+                            index={1}
                         />
                         <FeatureCard
                             icon="📊"
                             title="Direct Email Pipeline"
                             desc="Receive candidate dossiers directly in your inbox and initiate professional conversations instantly."
+                            index={2}
                         />
                     </div>
                 </div>
@@ -82,8 +108,8 @@ const HRHome = () => {
 
             {/* Recruiter Trust Section */}
             <div className="py-16 md:py-32 px-4 md:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                    <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center" style={{ maxWidth: '1200px', margin: '0 auto', overflow: 'hidden' }}>
+                    <div className="reveal-left">
                         <h2 className="text-3xl md:text-4xl" style={{ fontWeight: '900', marginBottom: '2rem' }}>Why Recruiters <span style={{ color: C.primary }}>Trust Us?</span></h2>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                             <TrustItem title="Centralized Management" desc="Forget switching between tabs. Manage jobs, applicants, and branches in one place." />
@@ -91,7 +117,7 @@ const HRHome = () => {
                             <TrustItem title="Direct Email Bridge" desc="Our platform connects you to talent; final communication and hiring happen through your professional email." />
                         </div>
                     </div>
-                    <div style={{ background: C.card, borderRadius: '30px', border: `1px solid ${C.border}`, position: 'relative' }} className="p-8 md:p-12">
+                    <div style={{ background: C.card, borderRadius: '30px', border: `1px solid ${C.border}`, position: 'relative' }} className="p-8 md:p-12 reveal-right">
                         <p className="text-xl md:text-2xl" style={{ fontStyle: 'italic', lineHeight: 1.6, marginBottom: '2rem' }}>"The HRConnect changed how we hire. We've reduced our time-to-hire by 40% across all our European offices."</p>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <div>
@@ -106,8 +132,8 @@ const HRHome = () => {
     );
 };
 
-const FeatureCard = ({ icon, title, desc }) => (
-    <div className="glass-card" style={{ padding: '2.5rem', borderRadius: '24px', border: `1px solid ${C.border}` }}>
+const FeatureCard = ({ icon, title, desc, index }) => (
+    <div className="glass-card reveal" style={{ padding: '2.5rem', borderRadius: '24px', border: `1px solid ${C.border}`, transitionDelay: `${index * 0.15}s` }}>
         <div style={{ fontSize: '2.5rem', marginBottom: '1.5rem' }}>{icon}</div>
         <h3 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '1rem' }}>{title}</h3>
         <p style={{ color: C.muted, lineHeight: 1.6, fontSize: '0.95rem' }}>{desc}</p>

@@ -47,6 +47,8 @@ export const resendOtpRequest = (payload) => api.post("/auth/resend-otp", payloa
 export const logoutRequest = () => api.post("/auth/logout");
 export const getMeRequest = () => api.get("/auth/me");
 export const updateProfileRequest = (payload) => api.patch("/auth/me", payload);
+export const forgotPasswordRequest = (payload) => api.post("/auth/forgot-password", payload);
+export const resetPasswordRequest = (payload) => api.post("/auth/reset-password", payload);
 
 export const getJobsRequest = (params) => api.get("/jobs", { params });
 export const getAllJobsAdminRequest = (params) => api.get("/jobs/admin/all", { params });
@@ -70,5 +72,9 @@ export const getAllApplicationsRequest = (params) => api.get("/applications", { 
 export const updateApplicationStatusRequest = (id, payload) =>
   api.patch(`/applications/${id}/status`, payload);
 export const getApplicationByIdRequest = (id) => api.get(`/applications/${id}`);
+
+export const scheduleInterviewRequest = (payload) => api.post("/interviews", payload);
+export const getGoogleAuthUrlRequest = () => api.get("/auth/google");
+export const checkGoogleConnectionRequest = () => api.get("/auth/google/check");
 
 export default api;
