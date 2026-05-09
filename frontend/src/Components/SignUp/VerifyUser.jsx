@@ -94,6 +94,7 @@ function VerifyUser() {
                     </div>
                     <h1 style={{ fontSize: '1.5rem', fontWeight: '800', color: C.text, marginBottom: '0.3rem' }}>Verify Your Email</h1>
                     <p style={{ fontSize: '0.85rem', color: C.muted }}>{info || "We've sent a verification code to your email address."}</p>
+                    <p style={{ fontSize: '0.75rem', color: '#F87171', marginTop: '0.5rem', fontWeight: '500' }}>ℹ️ If you don't see the code, please check your <b>Spam folder</b>.</p>
                 </div>
                 {error && (
                     <div style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', padding: '1rem', borderRadius: '10px', marginBottom: '1rem', fontSize: '0.9rem' }}>

@@ -1,14 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { subscribeRequest } from '../../api/api';
 
 function Footer() {
     const user = JSON.parse(localStorage.getItem('user'));
+    const isHR = user?.role === 'recruiter' || user?.role === 'admin';
+    const [email, setEmail] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const isHR = user?.role?.toLowerCase() === 'hr' || user?.role?.toLowerCase() === 'recruiter';
+    const handleSubscribe = async (e) => {
+        e.preventDefault();
+        if (!email) return;
+        try {
+            setLoading(true);
+            await subscribeRequest({ email });
+            alert("Thank you for subscribing! Check your email for updates.");
+            setEmail("");
+        } catch (error) {
+            console.error("Subscription failed:", error);
+            alert(error.response?.data?.message || "Subscription failed. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const quickLinks = [
         ...(!isHR ? [{ label: 'Find Jobs', path: '/jobs' }] : []),
-        ...(user?.role?.toLowerCase() !== 'candidate' ? [{ label: 'Post a Job', path: isHR ? '/post-job' : '/signup' }] : []),
+        ...(user?.role?.toLowerCase() !== 'candidate' ? [{ label: 'Post a Job', path: (user?.role === 'recruiter' || user?.role === 'admin') ? '/post-job' : '/signup' }] : []),
         { label: 'How it Works', path: '/about-us' }
     ];
 
@@ -65,11 +83,11 @@ function Footer() {
                     <div>
                         <h3 style={{ color: '#F9FAFB', fontWeight: '700', fontSize: '0.875rem', marginBottom: '1rem' }}>Stay Updated</h3>
                         <p style={{ fontSize: '0.85rem', marginBottom: '1rem', lineHeight: 1.6 }}>Subscribe for the latest job market insights.</p>
-                        <form style={{ position: 'relative' }}>
-                            <input type="email" placeholder="Enter your email"
+                        <form onSubmit={handleSubscribe} style={{ position: 'relative' }}>
+                            <input type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required
                                 style={{ width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '0.6rem 4rem 0.6rem 0.9rem', fontSize: '0.8rem', color: '#F9FAFB', outline: 'none', fontFamily: 'inherit' }} />
-                            <button style={{ position: 'absolute', right: '4px', top: '4px', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.35rem 0.75rem', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}>
-                                Join
+                            <button type="submit" disabled={loading} style={{ position: 'absolute', right: '4px', top: '4px', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.35rem 0.75rem', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}>
+                                {loading ? "..." : "Join"}
                             </button>
                         </form>
                     </div>

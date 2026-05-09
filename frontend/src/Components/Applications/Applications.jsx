@@ -46,10 +46,10 @@ function Applications() {
         const fetchApplications = async () => {
             try {
                 setLoading(true);
-                const response = isHR 
-                    ? await getAllApplicationsRequest() 
+                const response = isHR
+                    ? await getAllApplicationsRequest()
                     : await getMyApplicationsRequest();
-                
+
                 const apps = response.data?.data?.applications || response.data?.data || [];
                 setApplications(apps);
             } catch (err) {
@@ -66,13 +66,13 @@ function Applications() {
             const jobTitle = app.jobId?.title || "";
             const candidateName = app.candidateName || app.userId?.name || "";
             const company = app.jobId?.company || "";
-            
+
             const targetField = isHR ? candidateName : jobTitle;
-            const matchesSearch = targetField.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                                company.toLowerCase().includes(searchTerm.toLowerCase());
-            
-            const matchesFilter = filterStatus === "All" || 
-                                app.status.toLowerCase() === filterStatus.toLowerCase();
+            const matchesSearch = targetField.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                company.toLowerCase().includes(searchTerm.toLowerCase());
+
+            const matchesFilter = filterStatus === "All" ||
+                app.status.toLowerCase() === filterStatus.toLowerCase();
             return matchesSearch && matchesFilter;
         });
     }, [applications, searchTerm, filterStatus, isHR]);
@@ -80,7 +80,7 @@ function Applications() {
     const handleStatusChange = async (appId, newStatus) => {
         try {
             await updateApplicationStatusRequest(appId, { status: newStatus });
-            setApplications(prev => prev.map(app => 
+            setApplications(prev => prev.map(app =>
                 (app._id === appId || app.id === appId) ? { ...app, status: newStatus } : app
             ));
         } catch (err) {
@@ -108,6 +108,11 @@ function Applications() {
                         <p style={{ color: C.muted, fontSize: '1.05rem' }}>
                             {isHR ? 'Review and manage incoming applications for your positions.' : 'Track and manage your job applications across all branches.'}
                         </p>
+                        {!isHR && (
+                            <p style={{ fontSize: '0.8rem', color: '#F87171', marginTop: '0.5rem', fontWeight: '500' }}>
+                                ℹ️ If you see a status change but haven't received an email, please check your <b>Spam folder</b>.
+                            </p>
+                        )}
                     </div>
                     {isHR && (
                         <div style={{ display: 'flex', gap: '1rem' }}>
@@ -164,71 +169,72 @@ function Applications() {
                                         const jobTitle = app.jobId?.title || "Unknown Job";
                                         const candidateName = app.candidateName || app.userId?.name || "Unknown Candidate";
                                         const initial = isHR ? candidateName[0] : jobTitle[0];
-                                        
+
                                         return (
-                                        <tr key={id} style={{ borderBottom: idx !== filteredApps.length - 1 ? `1px solid ${C.border}` : 'none' }}>
-                                            <td style={tdS}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                                    <div style={{ width: '40px', height: '40px', background: 'rgba(59,130,246,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.primary, fontWeight: '800' }}>
-                                                        {initial?.toUpperCase()}
+                                            <tr key={id} style={{ borderBottom: idx !== filteredApps.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                                                <td style={tdS}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                        <div style={{ width: '40px', height: '40px', background: 'rgba(59,130,246,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.primary, fontWeight: '800' }}>
+                                                            {initial?.toUpperCase()}
+                                                        </div>
+                                                        <div>
+                                                            <p style={{ fontWeight: '700', fontSize: '0.95rem' }}>{isHR ? candidateName : jobTitle}</p>
+                                                            {isHR && <p style={{ fontSize: '0.75rem', color: C.muted }}>Applying for: {jobTitle}</p>}
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p style={{ fontWeight: '700', fontSize: '0.95rem' }}>{isHR ? candidateName : jobTitle}</p>
-                                                        {isHR && <p style={{ fontSize: '0.75rem', color: C.muted }}>Applying for: {jobTitle}</p>}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td style={tdS}>
-                                                <p style={{ fontSize: '0.9rem', fontWeight: '600' }}>{app.jobId?.company || "N/A"}</p>
-                                                <p style={{ fontSize: '0.75rem', color: C.muted }}>{app.jobId?.type || "N/A"}</p>
-                                            </td>
-                                            <td style={tdS}>
-                                                <p style={{ fontSize: '0.85rem', color: C.muted }}>{new Date(app.createdAt).toLocaleDateString()}</p>
-                                            </td>
-                                            <td style={tdS}>
-                                                <p style={{ fontSize: '0.85rem', color: C.muted }}>{app.jobId?.branchId?.branchName || "N/A"}</p>
-                                            </td>
-                                            <td style={tdS}>
-                                                <StatusBadge status={app.status} />
-                                            </td>
-                                            <td style={tdS}>
-                                                {isHR ? (
-                                                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                                        <select
-                                                            value={app.status}
-                                                            onChange={(e) => handleStatusChange(id, e.target.value)}
-                                                            style={{ background: C.bg, border: `1px solid ${C.border}`, color: C.text, padding: '0.4rem', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', textTransform: 'capitalize' }}
+                                                </td>
+                                                <td style={tdS}>
+                                                    <p style={{ fontSize: '0.9rem', fontWeight: '600' }}>{app.jobId?.company || "N/A"}</p>
+                                                    <p style={{ fontSize: '0.75rem', color: C.muted }}>{app.jobId?.type || "N/A"}</p>
+                                                </td>
+                                                <td style={tdS}>
+                                                    <p style={{ fontSize: '0.85rem', color: C.muted }}>{new Date(app.createdAt).toLocaleDateString()}</p>
+                                                </td>
+                                                <td style={tdS}>
+                                                    <p style={{ fontSize: '0.85rem', color: C.muted }}>{app.jobId?.branchId?.branchName || "N/A"}</p>
+                                                </td>
+                                                <td style={tdS}>
+                                                    <StatusBadge status={app.status} />
+                                                </td>
+                                                <td style={tdS}>
+                                                    {isHR ? (
+                                                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                            <select
+                                                                value={app.status}
+                                                                onChange={(e) => handleStatusChange(id, e.target.value)}
+                                                                style={{ background: C.bg, border: `1px solid ${C.border}`, color: C.text, padding: '0.4rem', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', textTransform: 'capitalize' }}
+                                                            >
+                                                                {STATUSES.map(s => <option key={s} value={s.toLowerCase()}>{s}</option>)}
+                                                            </select>
+                                                            <button
+                                                                onClick={() => navigate(`/view-application/${id}`)}
+                                                                style={{ background: 'rgba(59,130,246,0.1)', border: 'none', color: C.primary, padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}>
+                                                                View
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => {
+                                                                // Most robust ID retrieval
+                                                                const jobObj = app.jobId;
+                                                                const targetId = jobObj?._id || jobObj?.id || (typeof jobObj === 'string' ? jobObj : null);
+
+                                                                if (targetId) {
+                                                                    navigate(`/job-details/${targetId}`);
+                                                                } else {
+                                                                    console.error("DEBUG: Application Job Data:", jobObj);
+                                                                    alert(`Job details reference missing. Please contact support. (Ref: ${app._id || app.id})`);
+                                                                }
+                                                            }}
+                                                            style={{ background: 'transparent', border: `1px solid ${C.primary}`, color: C.primary, padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
                                                         >
-                                                            {STATUSES.map(s => <option key={s} value={s.toLowerCase()}>{s}</option>)}
-                                                        </select>
-                                                        <button 
-                                                            onClick={() => navigate(`/view-application/${id}`)}
-                                                            style={{ background: 'rgba(59,130,246,0.1)', border: 'none', color: C.primary, padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}>
-                                                            View
+                                                            View Job
                                                         </button>
-                                                    </div>
-                                                ) : (
-                                                    <button 
-                                                        onClick={() => {
-                                                            // Most robust ID retrieval
-                                                            const jobObj = app.jobId;
-                                                            const targetId = jobObj?._id || jobObj?.id || (typeof jobObj === 'string' ? jobObj : null);
-                                                            
-                                                            if (targetId) {
-                                                                navigate(`/job-details/${targetId}`);
-                                                            } else {
-                                                                console.error("DEBUG: Application Job Data:", jobObj);
-                                                                alert(`Job details reference missing. Please contact support. (Ref: ${app._id || app.id})`);
-                                                            }
-                                                        }} 
-                                                        style={{ background: 'transparent', border: `1px solid ${C.primary}`, color: C.primary, padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
-                                                    >
-                                                        View Job
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    );})}
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>

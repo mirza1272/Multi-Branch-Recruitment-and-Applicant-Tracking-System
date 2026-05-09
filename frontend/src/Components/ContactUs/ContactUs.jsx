@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { sendContactFormRequest } from "../../api/api";
 
 const C = { bg: '#0F172A', card: '#1E293B', primary: '#3B82F6', text: '#F1F5F9', muted: '#94A3B8', border: '#334155', accent: '#2DD4BF' };
 
@@ -16,15 +16,27 @@ const ContactInfoItem = ({ icon, label, val }) => (
 
 function ContactUs() {
     const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", message: "" });
+    const [loading, setLoading] = useState(false);
     const user = JSON.parse(localStorage.getItem('user'));
     const isHR = user?.role === 'recruiter' || user?.role === 'admin';
+
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
-    const handleSubmit = (e) => {
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        alert("Message sent successfully!");
-        setFormData({ firstName: "", lastName: "", email: "", message: "" });
+        try {
+            setLoading(true);
+            await sendContactFormRequest(formData);
+            alert("Message sent successfully! We will get back to you soon.");
+            setFormData({ firstName: "", lastName: "", email: "", message: "" });
+        } catch (error) {
+            console.error("Failed to send message:", error);
+            alert(error.response?.data?.message || "Failed to send message. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Intersection Observer for scroll reveal
@@ -120,8 +132,8 @@ function ContactUs() {
                                 <label style={labelS}>Message</label>
                                 <textarea placeholder="Your message..." style={{ ...inputS, height: '120px', resize: 'none' }} value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} required></textarea>
                             </div>
-                            <button type="submit" className="btn-primary" style={{ padding: '1rem', borderRadius: '12px', fontWeight: '800', fontSize: '1rem', marginTop: '1rem' }}>
-                                Send Message
+                            <button type="submit" className="btn-primary" style={{ padding: '1rem', borderRadius: '12px', fontWeight: '800', fontSize: '1rem', marginTop: '1rem' }} disabled={loading}>
+                                {loading ? "Sending Message..." : "Send Message"}
                             </button>
                         </form>
                     </div>

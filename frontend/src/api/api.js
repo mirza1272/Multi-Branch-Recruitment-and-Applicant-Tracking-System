@@ -32,7 +32,7 @@ api.interceptors.response.use(
   (error) => {
     // Only redirect to login if it's a 401 AND we're not already trying to login
     const isLoginRequest = error.config?.url?.includes("auth/login");
-    
+
     if (error.response?.status === 401 && !isLoginRequest) {
       console.error("🔓 Auth failed - clearing session");
       localStorage.removeItem("token");
@@ -84,5 +84,7 @@ export const getApplicationByIdRequest = (id) => api.get(`applications/${id}`);
 export const scheduleInterviewRequest = (payload) => api.post("interviews", payload);
 export const getGoogleAuthUrlRequest = () => api.get("auth/google");
 export const checkGoogleConnectionRequest = () => api.get("auth/google/check");
+export const sendContactFormRequest = (payload) => api.post("contact/send", payload);
+export const subscribeRequest = (payload) => api.post("contact/subscribe", payload);
 
 export default api;
