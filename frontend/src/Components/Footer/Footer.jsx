@@ -7,6 +7,7 @@ function Footer() {
     const isHR = user?.role === 'recruiter' || user?.role === 'admin';
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     const handleSubscribe = async (e) => {
         e.preventDefault();
@@ -14,8 +15,9 @@ function Footer() {
         try {
             setLoading(true);
             await subscribeRequest({ email });
-            alert("Thank you for subscribing! Check your email for updates.");
+            setSuccess(true);
             setEmail("");
+            setTimeout(() => setSuccess(false), 5000);
         } catch (error) {
             console.error("Subscription failed:", error);
             alert(error.response?.data?.message || "Subscription failed. Please try again.");
@@ -90,6 +92,11 @@ function Footer() {
                                 {loading ? "..." : "Join"}
                             </button>
                         </form>
+                        {success && (
+                            <p style={{ color: '#10B981', fontSize: '0.8rem', marginTop: '0.75rem', fontWeight: '600' }}>
+                                ✅ Subscribed Successfully!
+                            </p>
+                        )}
                     </div>
                 </div>
 

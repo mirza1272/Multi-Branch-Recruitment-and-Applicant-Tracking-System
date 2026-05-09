@@ -85,36 +85,39 @@ export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }
   if (process.env.SENDGRID_API) {
     console.log(`🚀 Using SendGrid API for ${to} (From: ${fromEmail})`);
 
-    fetch("https://api.sendgrid.com/v3/mail/send", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.SENDGRID_API}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        personalizations: [{ to: [{ email: to }] }],
-        from: {
-          email: fromEmail,
-          name: "HRConnect Team"
+    try {
+      const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.SENDGRID_API}`,
+          "Content-Type": "application/json"
         },
-        subject: subject,
-        content: [{
-          type: "text/html",
-          value: html
-        }]
-      })
-    })
-      .then(async (res) => {
-        if (res.status === 202) {
-          console.log("✅ SendGrid success!");
-        } else {
-          const errorData = await res.json();
-          console.error("❌ SendGrid error details:", JSON.stringify(errorData, null, 2));
-        }
-      })
-      .catch(e => console.error("❌ SendGrid fetch error:", e.message));
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email: to }] }],
+          from: {
+            email: fromEmail,
+            name: "HRConnect Team"
+          },
+          subject: subject,
+          content: [{
+            type: "text/html",
+            value: html
+          }]
+        })
+      });
 
-    return true; // Return to API instantly
+      if (res.status === 202) {
+        console.log("✅ SendGrid success!");
+        return true;
+      } else {
+        const errorData = await res.json();
+        console.error("❌ SendGrid error details:", JSON.stringify(errorData, null, 2));
+        throw new Error(errorData.errors?.[0]?.message || "SendGrid failed to send email");
+      }
+    } catch (e) {
+      console.error("❌ SendGrid fetch error:", e.message);
+      throw e;
+    }
   }
 
   const mailOptions = {

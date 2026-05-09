@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import { sendContactFormRequest } from "../../api/api";
 
 const C = { bg: '#0F172A', card: '#1E293B', primary: '#3B82F6', text: '#F1F5F9', muted: '#94A3B8', border: '#334155', accent: '#2DD4BF' };
@@ -17,6 +18,7 @@ const ContactInfoItem = ({ icon, label, val }) => (
 function ContactUs() {
     const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", message: "" });
     const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
     const user = JSON.parse(localStorage.getItem('user'));
     const isHR = user?.role === 'recruiter' || user?.role === 'admin';
 
@@ -29,8 +31,9 @@ function ContactUs() {
         try {
             setLoading(true);
             await sendContactFormRequest(formData);
-            alert("Message sent successfully! We will get back to you soon.");
+            setSuccess(true);
             setFormData({ firstName: "", lastName: "", email: "", message: "" });
+            setTimeout(() => setSuccess(false), 5000);
         } catch (error) {
             console.error("Failed to send message:", error);
             alert(error.response?.data?.message || "Failed to send message. Please try again.");
@@ -132,6 +135,11 @@ function ContactUs() {
                                 <label style={labelS}>Message</label>
                                 <textarea placeholder="Your message..." style={{ ...inputS, height: '120px', resize: 'none' }} value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} required></textarea>
                             </div>
+                            {success && (
+                                <div style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981', padding: '1rem', borderRadius: '12px', textAlign: 'center', fontWeight: '700', border: '1px solid rgba(16,185,129,0.2)' }}>
+                                    ✅ Message Sent Successfully!
+                                </div>
+                            )}
                             <button type="submit" className="btn-primary" style={{ padding: '1rem', borderRadius: '12px', fontWeight: '800', fontSize: '1rem', marginTop: '1rem' }} disabled={loading}>
                                 {loading ? "Sending Message..." : "Send Message"}
                             </button>

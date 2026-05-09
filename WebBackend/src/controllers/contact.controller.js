@@ -28,7 +28,7 @@ export const handleContactForm = async (req, res) => {
         `;
 
         // Send email to admin
-        await sendEmail(adminEmail, subject, html);
+        await sendEmail({ to: adminEmail, subject, html });
 
         return res.status(200).json({ success: true, message: "Message sent successfully! We will get back to you soon." });
     } catch (error) {
@@ -60,7 +60,7 @@ export const handleSubscription = async (req, res) => {
             </div>
         `;
 
-        await sendEmail(adminEmail, subject, html);
+        await sendEmail({ to: adminEmail, subject, html });
 
         return res.status(200).json({ success: true, message: "Thank you for subscribing!" });
     } catch (error) {
