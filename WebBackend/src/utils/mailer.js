@@ -76,14 +76,14 @@ export const sendEmail = async ({ to, subject, html, useInterviewEmail = false }
   const fromEmail = useInterviewEmail ? process.env.INTERVIEW_GMAIL_USER : process.env.EMAIL_USER;
 
   // Resend API Fallback (Optional but highly recommended for production)
-  // If RESEND_API_KEY is present, it will use Resend's REST API which is much more stable
-  if (process.env.RESEND_API_KEY && !useInterviewEmail) {
+  // If RESEND_API is present, it will use Resend's REST API which is much more stable
+  if (process.env.RESEND_API && !useInterviewEmail) {
     console.log(`🚀 Using Resend API for ${to}`);
     fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.RESEND_API_KEY}`
+        "Authorization": `Bearer ${process.env.RESEND_API}`
       },
       body: JSON.stringify({
         from: "HRConnect <onboarding@resend.dev>", // Or your verified domain
