@@ -58,7 +58,7 @@ export const createJob = asyncHandler(async (req, res) => {
   // ─────────────────────────────────────────────
   // Create Job
   // ─────────────────────────────────────────────
-  
+
   // If company is not provided, use the recruiter's company from their profile
   let finalCompany = company ? company.trim() : null;
   if (!finalCompany && req.user.company) {
@@ -90,7 +90,7 @@ export const createJob = asyncHandler(async (req, res) => {
   };
 
   const job = await Job.create(jobData);
-  
+
   // Populate relationships
   await job.populate("branchId", "branchName");
   await job.populate("createdBy", "firstName lastName email");
@@ -415,6 +415,7 @@ export const updateJob = asyncHandler(async (req, res) => {
     "seats",
     "status",
     "isActive",
+    "branchId",
   ];
 
   const sanitizedUpdates = {};

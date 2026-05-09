@@ -195,10 +195,6 @@ function Jobs() {
                             </div>
 
                             <div>
-                                <label style={labelS}>Min Salary: <span style={{ color: C.primary }}>${minSalary}</span></label>
-                                <input type="range" min="0" max="10000" step="500" value={minSalary}
-                                    onChange={e => setMinSalary(parseInt(e.target.value))}
-                                    style={{ width: '100%', accentColor: C.primary, marginBottom: '1rem' }} />
                                 <button onClick={() => { setSearchTerm(""); setBranch("All"); setDepartment("All"); setMinSalary(0); }}
                                     style={{ width: '100%', padding: '0.55rem', borderRadius: '8px', border: `1.5px solid ${C.primary}`, background: 'transparent', color: C.primary, fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                                     Reset Filters
