@@ -59,13 +59,20 @@ function AboutUs() {
     ];
 
     const hrSteps = [
-        { title: "Create Account", desc: "Register your company and set up your HR profile to start hiring.", icon: <UserPlusIcon /> },
-        { title: "Post Jobs", desc: "Create detailed job listings across multiple branches and departments.", icon: <FileTextIcon /> },
-        { title: "Review Applicants", desc: "Filter, sort, and review top candidates using our advanced tracking system.", icon: <SearchIcon /> },
-        { title: "Hire Talent", desc: "Communicate directly with candidates and build your dream team.", icon: <CheckCircleIcon /> }
+        { title: "Register Company", desc: "Register your company and set up your HR profile to start hiring.", icon: <UserPlusIcon /> },
+        { title: "Post Openings", desc: "Create detailed job listings across multiple branches and departments.", icon: <FileTextIcon /> },
+        { title: "Track Applicants", desc: "Filter, sort, and review top candidates using our advanced tracking system.", icon: <SearchIcon /> },
+        { title: "Build Your Team", desc: "Communicate directly with candidates and build your dream team.", icon: <CheckCircleIcon /> }
     ];
 
-    const steps = isHR ? hrSteps : candidateSteps;
+    const guestSteps = [
+        { title: "Join Platform", desc: "Sign up as a recruiter to hire, or as a candidate to find your next role.", icon: <UserPlusIcon /> },
+        { title: "Set Up Profile", desc: "Post jobs across branches or upload your resume to get noticed.", icon: <FileTextIcon /> },
+        { title: "Smart Matching", desc: "Our AI-powered system connects the right talent with the right company.", icon: <SearchIcon /> },
+        { title: "Connect & Grow", desc: "Seamlessly manage interviews or land your perfect match instantly.", icon: <CheckCircleIcon /> }
+    ];
+
+    const steps = user ? (isHR ? hrSteps : candidateSteps) : guestSteps;
 
     const candidateFaqs = [
         { q: "Can I upload a CV?", a: "Yes! You can upload your CV in PDF or Word format directly from your profile settings or during the job application process." },
@@ -109,7 +116,9 @@ function AboutUs() {
             <div className="reveal" style={{ padding: '6rem 1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
                 <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
                     <h2 style={{ fontSize: '2.5rem', fontWeight: '900', marginBottom: '1rem' }}>How it works</h2>
-                    <p style={{ color: C.muted }}>{isHR ? "Four simple steps to build your dream team." : "Four simple steps to land your dream job."}</p>
+                    <p style={{ color: C.muted }}>
+                        {user ? (isHR ? "Four simple steps to build your dream team." : "Four simple steps to land your dream job.") : "The simplest way to manage recruitment and find talent."}
+                    </p>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
                     {steps.map((step, i) => <StepCard key={i} {...step} />)}
@@ -136,7 +145,7 @@ function AboutUs() {
                 <div className="reveal-right" style={{ flex: 1, minWidth: '300px' }}>
                     <h2 style={{ fontSize: '2.5rem', fontWeight: '900', marginBottom: '1.5rem', lineHeight: 1.2 }}>We're Only Working With <span style={{ color: C.primary }}>The Best</span></h2>
                     <p style={{ color: C.muted, marginBottom: '2.5rem', lineHeight: 1.8 }}>
-                        Our platform is designed to filter out the noise and bring the highest quality candidates to the world's most innovative companies.
+                        Our platform is engineered to bridge the gap between world-class companies and top-tier talent. Whether you're scaling a team or your career, we provide the tools you need to succeed.
                     </p>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
                         {[

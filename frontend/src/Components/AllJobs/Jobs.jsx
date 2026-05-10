@@ -97,6 +97,7 @@ function Jobs() {
                     sortBy: "newest",
                 };
 
+                if (searchTerm) params.search = searchTerm;
                 if (branch !== "All") params.branchId = branch;
                 if (department !== "All") params.category = department;
                 if (minSalary > 0) params.minSalary = minSalary;

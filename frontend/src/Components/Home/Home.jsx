@@ -3,6 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { getJobsRequest, getBranchesRequest } from "../../api/api";
 import { CATEGORIES as DEPARTMENTS } from "../../Constants";
 import HRHome from "./HRHome";
+import {
+    FaLaptopCode, FaChartLine, FaBullhorn, FaUsers,
+    FaMoneyBillWave, FaCog, FaPalette, FaHeadset,
+    FaBoxOpen, FaShieldAlt, FaFirstAid, FaStar
+} from "react-icons/fa";
 
 const SearchIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>;
 const MapPinIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
@@ -21,18 +26,18 @@ const RECENT_JOBS = [
     { id: 4, title: "District Intranet Director", company: "VonRueden - Weber Co", location: "Florida, USA", salary: "$4200-$4800", type: "Full time", category: "Commerce", timeAgo: "24 min ago", logo: "https://api.dicebear.com/7.x/initials/svg?seed=DI" },
 ];
 const CATEGORIES = [
-    { name: "Engineering", icon: "💻" },
-    { name: "Sales", icon: "📈" },
-    { name: "Marketing", icon: "📣" },
-    { name: "HR", icon: "👥" },
-    { name: "Finance", icon: "💵" },
-    { name: "Operations", icon: "⚙️" },
-    { name: "Design", icon: "🎨" },
-    { name: "Customer Support", icon: "🎧" },
-    { name: "Product", icon: "📦" },
-    { name: "Quality Assurance", icon: "🛡️" },
-    { name: "Healthcare", icon: "🏥" },
-    { name: "Other", icon: "✨" },
+    { name: "Engineering", icon: <FaLaptopCode /> },
+    { name: "Sales", icon: <FaChartLine /> },
+    { name: "Marketing", icon: <FaBullhorn /> },
+    { name: "HR", icon: <FaUsers /> },
+    { name: "Finance", icon: <FaMoneyBillWave /> },
+    { name: "Operations", icon: <FaCog /> },
+    { name: "Design", icon: <FaPalette /> },
+    { name: "Customer Support", icon: <FaHeadset /> },
+    { name: "Product", icon: <FaBoxOpen /> },
+    { name: "Quality Assurance", icon: <FaShieldAlt /> },
+    { name: "Healthcare", icon: <FaFirstAid /> },
+    { name: "Other", icon: <FaStar /> },
 ];
 const TESTIMONIALS = [
     { name: "Marco Rihn", text: "Amazing services, they helped me find my dream job within a week!", rating: 5 },
@@ -177,10 +182,10 @@ function Home() {
 
                     <h1 className="text-5xl md:text-6xl font-extrabold mb-5 tracking-tight animate-fade-in-up"
                         style={{ color: C.text, lineHeight: 1.15 }}>
-                        Find Your <span style={{ color: C.primary }}>Dream Job</span> Today!
+                        Empowering <span style={{ color: C.primary }}>Recruitment</span>, Fueling Careers.
                     </h1>
                     <p className="text-lg mb-10 max-w-2xl mx-auto animate-fade-in-up delay-200" style={{ color: C.muted }}>
-                        Connecting Talent with Opportunity. Your Gateway to Career Success.
+                        Whether you're hiring top talent or seeking your next big move, HRConnect is your ultimate partner in success.
                     </p>
 
                     {/* Search Bar */}
@@ -276,7 +281,7 @@ function Home() {
                                 onMouseLeave={e => e.currentTarget.style.transform = 'none'}
                                 onClick={() => navigate(`/jobs?department=${cat.name}`)}
                             >
-                                <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{cat.icon}</div>
+                                <div style={{ fontSize: '2.5rem', marginBottom: '1rem', color: C.primary, display: 'flex', justifyContent: 'center' }}>{cat.icon}</div>
                                 <h4 style={{ fontWeight: '700', fontSize: '1rem', color: C.text, marginBottom: '0.3rem' }}>{cat.name}</h4>
                                 <p style={{ fontSize: '0.75rem', color: C.primary, fontWeight: '700' }}>View Openings</p>
                             </div>
@@ -292,9 +297,9 @@ function Home() {
                         <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80" alt="Work" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </div>
                     <div className="reveal-right">
-                        <h2 style={{ fontSize: '2rem', fontWeight: '800', color: C.text, marginBottom: '1rem', lineHeight: 1.25 }}>Good Life Begins With A Good Company</h2>
+                        <h2 style={{ fontSize: '2rem', fontWeight: '800', color: C.text, marginBottom: '1rem', lineHeight: 1.25 }}>Smart Hiring Starts With A Powerful Platform</h2>
                         <p style={{ color: C.muted, marginBottom: '2rem', lineHeight: 1.7, fontSize: '0.9rem' }}>
-                            We bridge the gap between world-class companies and top-tier talent. Our platform is designed to make your job search as seamless as possible.
+                            We bridge the gap between world-class companies and top-tier talent. From seamless job postings to effortless applications, we've got you covered.
                         </p>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
                             <div>

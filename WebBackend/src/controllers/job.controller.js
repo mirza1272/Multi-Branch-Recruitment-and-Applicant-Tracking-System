@@ -148,7 +148,13 @@ export const getAllJobs = asyncHandler(async (req, res) => {
   }
 
   if (search) {
-    filter.$text = { $search: search.trim() };
+    const searchRegex = new RegExp(search.trim(), "i");
+    filter.$or = [
+      { title: searchRegex },
+      { company: searchRegex },
+      { department: searchRegex },
+      { category: searchRegex }
+    ];
   }
 
   // ─────────────────────────────────────────────

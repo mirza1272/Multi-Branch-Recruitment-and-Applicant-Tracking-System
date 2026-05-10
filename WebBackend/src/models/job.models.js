@@ -148,7 +148,7 @@ const jobSchema = new mongoose.Schema(
 // ─────────────────────────────────────────────
 // Indexes for Search & Filtering
 // ─────────────────────────────────────────────
-jobSchema.index({ title: "text", description: "text", department: "text" });
+jobSchema.index({ title: "text", description: "text", department: "text", company: "text" });
 jobSchema.index({ branchId: 1, status: 1 });
 jobSchema.index({ category: 1, type: 1 });
 jobSchema.index({ salaryNumeric: 1 });
