@@ -100,6 +100,7 @@ Modern organizations with decentralized branches often face the following hurdle
 | **Mongoose** | 9.x | Elegant MongoDB object modeling (ODM) |
 | **Nodemailer** | 8.x | SMTP management for internal notifications |
 | **SendGrid** | 8.x | Professional-grade transactional email delivery |
+| **Supabase** | Latest | Professional-grade File Store in buckets |
 
 #### **Cloud & DevOps**
 - **Hosting:** Vercel (Frontend), Render (Backend).
