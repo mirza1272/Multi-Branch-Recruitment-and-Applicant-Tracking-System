@@ -109,8 +109,8 @@ npm run dev
 Special thanks to the team behind HRConnect:
 
 - **Haseeb ur Rahman** (23F-0566) - *Lead Developer & Architect (Hnadled Frontend and Backend both)*
-- **Areeba Majeed** (23F-0651) - *Frontend Engineer*
-- **Maheen Fatima** (23F-0595) - *Database Administrator*
+- **Areeba Majeed** (23F-0651) - *MERN Developer*
+- **Maheen Fatima** (23F-0595) - *Frontend Engineer & Database Administrator*
 
 ---
 
