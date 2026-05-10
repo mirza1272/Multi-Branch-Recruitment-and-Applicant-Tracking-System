@@ -105,7 +105,7 @@ Modern organizations with decentralized branches often face the following hurdle
 #### **Cloud & DevOps**
 - **Hosting:** Vercel (Frontend), Render (Backend).
 - **Database:** MongoDB Atlas (Cloud Cluster).
-- **File Storage:** Supabase / Cloudinary (Document management).
+- **File Storage:** Supabase.
 
 ---
 
