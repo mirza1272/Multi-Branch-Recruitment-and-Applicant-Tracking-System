@@ -348,11 +348,13 @@ function ApplyJob() {
                             {/* Resume Upload */}
                             <div>
                                 <h3 style={SectionTitleS}><span style={{ width: '4px', height: '18px', background: C.primary, borderRadius: '2px' }}></span> Resume Upload</h3>
-                                <div style={{ padding: '2rem', border: `2px dashed ${errors.resume ? C.error : C.border}`, borderRadius: '15px', textAlign: 'center', background: 'rgba(15,23,42,0.5)', transition: 'all 0.3s' }}>
+                                <div style={{ padding: '2rem', border: `2px dashed ${errors.resume ? C.error : C.border}`, borderRadius: '15px', textAlign: 'center', background: 'rgba(15,23,42,0.5)', transition: 'all 0.3s', overflow: 'hidden' }}>
                                     <input type="file" name="resume" id="resume" accept=".pdf" onChange={handleChange} style={{ display: 'none' }} />
-                                    <label htmlFor="resume" style={{ cursor: 'pointer' }}>
+                                    <label htmlFor="resume" style={{ cursor: 'pointer', display: 'block', width: '100%' }}>
                                         <div style={{ fontSize: '2.5rem', color: C.primary, marginBottom: '1rem' }}>📄</div>
-                                        <p style={{ fontWeight: '700', marginBottom: '0.5rem' }}>{formData.resume ? formData.resume.name : "Click to upload your resume"}</p>
+                                        <p style={{ fontWeight: '700', marginBottom: '0.5rem', wordBreak: 'break-all', overflowWrap: 'anywhere', fontSize: '0.9rem', lineHeight: '1.4' }}>
+                                            {formData.resume ? formData.resume.name : "Click to upload your resume"}
+                                        </p>
                                         <p style={{ fontSize: '0.75rem', color: C.muted }}>PDF format only (Max 5MB)</p>
                                     </label>
                                 </div>
@@ -362,11 +364,13 @@ function ApplyJob() {
                             {/* Cover Letter Upload */}
                             <div>
                                 <h3 style={SectionTitleS}><span style={{ width: '4px', height: '18px', background: C.accent, borderRadius: '2px' }}></span> Cover Letter (Optional)</h3>
-                                <div style={{ padding: '2rem', border: `2px dashed ${errors.coverLetter ? C.error : C.border}`, borderRadius: '15px', textAlign: 'center', background: 'rgba(15,23,42,0.5)', transition: 'all 0.3s' }}>
+                                <div style={{ padding: '2rem', border: `2px dashed ${errors.coverLetter ? C.error : C.border}`, borderRadius: '15px', textAlign: 'center', background: 'rgba(15,23,42,0.5)', transition: 'all 0.3s', overflow: 'hidden' }}>
                                     <input type="file" name="coverLetter" id="coverLetter" accept=".pdf,.doc,.docx" onChange={handleChange} style={{ display: 'none' }} />
-                                    <label htmlFor="coverLetter" style={{ cursor: 'pointer' }}>
+                                    <label htmlFor="coverLetter" style={{ cursor: 'pointer', display: 'block', width: '100%' }}>
                                         <div style={{ fontSize: '2.5rem', color: C.accent, marginBottom: '1rem' }}>✉️</div>
-                                        <p style={{ fontWeight: '700', marginBottom: '0.5rem' }}>{formData.coverLetter ? formData.coverLetter.name : "Upload your cover letter"}</p>
+                                        <p style={{ fontWeight: '700', marginBottom: '0.5rem', wordBreak: 'break-all', overflowWrap: 'anywhere', fontSize: '0.9rem', lineHeight: '1.4' }}>
+                                            {formData.coverLetter ? formData.coverLetter.name : "Upload your cover letter"}
+                                        </p>
                                         <p style={{ fontSize: '0.75rem', color: C.muted }}>PDF or Word format (Max 5MB)</p>
                                     </label>
                                 </div>
@@ -401,7 +405,7 @@ function ApplyJob() {
             </div>
 
             <style>{`
-                .glass-card { background: ${C.card}; border: 1px solid ${C.border}; box-shadow: 0 10px 30px rgba(0,0,0,0.1); backdrop-filter: blur(10px); }
+                .glass-card { background: ${C.card}; border: 1px solid ${C.border}; box-shadow: 0 10px 30px rgba(0,0,0,0.1); backdrop-filter: blur(10px); overflow: hidden; box-sizing: border-box; }
                 .glass-card:hover { border-color: ${C.primary}; transform: translateY(-5px); transition: all 0.4s; }
                 @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
                 .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
