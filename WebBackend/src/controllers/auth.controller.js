@@ -109,6 +109,8 @@ export const verifyOtp = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Email and OTP are required");
   }
 
+  console.log(`🔍 Verifying registration OTP for ${email}: Received ${otp}`);
+
   const user = await User.findOne({ email }).select("+otpCode +otpExpiresAt +isVerified");
   if (!user) {
     throw new ApiError(404, "User not found");
@@ -118,11 +120,15 @@ export const verifyOtp = asyncHandler(async (req, res) => {
     throw new ApiError(400, "User is already verified");
   }
 
-  if (!user.otpCode || user.otpCode !== otp) {
+  console.log(`📋 DB OTP: ${user.otpCode}, Expiry: ${user.otpExpiresAt}`);
+
+  if (!user.otpCode || user.otpCode !== otp.toString()) {
+    console.error(`❌ OTP Mismatch: Expected ${user.otpCode}, got ${otp}`);
     throw new ApiError(400, "Invalid verification code");
   }
 
   if (!user.otpExpiresAt || user.otpExpiresAt < Date.now()) {
+    console.error(`❌ OTP Expired: ${user.otpExpiresAt} < ${Date.now()}`);
     throw new ApiError(400, "OTP expired. Please request a new one.");
   }
 
@@ -139,6 +145,26 @@ export const verifyOtp = asyncHandler(async (req, res) => {
       token,
     }, "Email verified successfully")
   );
+});
+
+export const verifyResetOtp = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    throw new ApiError(400, "Email and code are required");
+  }
+
+  const user = await User.findOne({ email }).select("+otpCode +otpExpiresAt");
+  if (!user) throw new ApiError(404, "User not found");
+
+  if (!user.otpCode || user.otpCode !== otp.toString()) {
+    throw new ApiError(400, "Invalid reset code");
+  }
+
+  if (!user.otpExpiresAt || user.otpExpiresAt < Date.now()) {
+    throw new ApiError(400, "Reset code expired");
+  }
+
+  return res.status(200).json(new ApiResponse(200, null, "Code verified successfully"));
 });
 
 export const resendOtp = asyncHandler(async (req, res) => {

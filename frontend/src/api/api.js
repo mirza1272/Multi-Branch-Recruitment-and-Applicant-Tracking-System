@@ -52,6 +52,7 @@ export const logoutRequest = () => api.post("auth/logout");
 export const getMeRequest = () => api.get("auth/me");
 export const updateProfileRequest = (payload) => api.patch("auth/me", payload);
 export const forgotPasswordRequest = (payload) => api.post("auth/forgot-password", payload);
+export const verifyResetOtpRequest = (payload) => api.post("auth/verify-reset-otp", payload);
 export const resetPasswordRequest = (payload) => api.post("auth/reset-password", payload);
 
 // Job Routes

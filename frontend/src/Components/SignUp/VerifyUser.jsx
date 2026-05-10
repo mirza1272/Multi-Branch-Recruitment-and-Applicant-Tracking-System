@@ -41,8 +41,8 @@ function VerifyUser() {
             return;
         }
 
-        if (code.trim().length < 4) {
-            setError("Please enter the verification code sent to your email.");
+        if (code.trim().length !== 6) {
+            setError("Please enter the 6-digit verification code sent to your email.");
             return;
         }
 

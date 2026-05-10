@@ -9,6 +9,7 @@ import {
   updateProfile,
   forgotPassword,
   resetPassword,
+  verifyResetOtp,
 } from "../controllers/auth.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -22,6 +23,7 @@ router.post("/logout", verifyJWT, logout);
 router.get("/me", verifyJWT, getMe);
 router.patch("/me", verifyJWT, updateProfile);
 router.post("/forgot-password", forgotPassword);
+router.post("/verify-reset-otp", verifyResetOtp);
 router.post("/reset-password", resetPassword);
 
 export default router;
