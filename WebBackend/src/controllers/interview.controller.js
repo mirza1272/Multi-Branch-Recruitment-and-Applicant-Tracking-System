@@ -72,6 +72,7 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
     message,
     type,
     meetingLink: finalMeetingLink,
+    hrEmail: req.user.email,
   }).catch((e) => console.error("❌ Email sending failed:", e.message));
 
   // Send copy to HR/Recruiter (Logged in user)
@@ -184,6 +185,7 @@ export const updateInterview = asyncHandler(async (req, res) => {
     date: interview.date,
     time: interview.time,
     message: interview.message,
+    hrEmail: req.user.email,
   }).catch((e) => console.error("Email error:", e.message));
 
   return res.status(200).json(new ApiResponse(200, { interview }, "Interview updated"));

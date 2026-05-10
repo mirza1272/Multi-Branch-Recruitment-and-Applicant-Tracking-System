@@ -159,7 +159,13 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
   application.status = status;
   await application.save();
 
-  const emailData = { to: application.userId.email, name: application.userId.name, jobTitle: application.jobId.title };
+  const emailData = {
+    to: application.userId.email,
+    name: application.userId.name,
+    jobTitle: application.jobId.title,
+    hrEmail: req.user.email
+  };
+
   if (status === "shortlisted") sendShortlistedEmail(emailData).catch(() => { });
   else if (status === "rejected") sendRejectedEmail(emailData).catch(() => { });
   else if (status === "accepted") sendAcceptedEmail({ ...emailData, branchName: "Head Office" }).catch(() => { });
