@@ -1,3 +1,4 @@
+import path from "path";
 import { Application } from "../models/application.models.js";
 import { Job } from "../models/job.models.js";
 import { User } from "../models/user.models.js";
@@ -14,10 +15,6 @@ import {
   sendInterviewScheduledEmail,
 } from "../utils/mailer.js";
 
-// ─────────────────────────────────────────────
-// @route   POST /api/applications
-// @access  Candidate
-// ─────────────────────────────────────────────
 export const applyForJob = asyncHandler(async (req, res) => {
   try {
     const {
@@ -37,19 +34,22 @@ export const applyForJob = asyncHandler(async (req, res) => {
     if (existing) throw new ApiError(409, "You have already applied for this job");
 
     // Upload resume to Supabase
-    // Upload resume to Supabase
     let resumeUrl = "";
     if (req.files?.resume?.[0]) {
-      const fileName = `applications/resume_${userId}_${jobId}_${Date.now()}.pdf`;
-      const result = await uploadToSupabase(req.files.resume[0].buffer, fileName);
+      const file = req.files.resume[0];
+      const ext = path.extname(file.originalname) || ".pdf";
+      const fileName = `applications/resume_${userId}_${jobId}_${Date.now()}${ext}`;
+      const result = await uploadToSupabase(file.buffer, fileName, file.mimetype);
       resumeUrl = result.url;
     }
 
     // Upload cover letter to Supabase
     let coverLetterUrl = "";
     if (req.files?.coverLetter?.[0]) {
-      const fileName = `applications/cover_${userId}_${jobId}_${Date.now()}.pdf`;
-      const result = await uploadToSupabase(req.files.coverLetter[0].buffer, fileName);
+      const file = req.files.coverLetter[0];
+      const ext = path.extname(file.originalname) || ".pdf";
+      const fileName = `applications/cover_${userId}_${jobId}_${Date.now()}${ext}`;
+      const result = await uploadToSupabase(file.buffer, fileName, file.mimetype);
       coverLetterUrl = result.url;
     }
 

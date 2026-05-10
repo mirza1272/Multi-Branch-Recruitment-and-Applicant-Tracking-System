@@ -13,12 +13,12 @@ const BUCKET_NAME = 'resumes'
  * @param {string} fileName 
  * @returns {Promise<{url: string, path: string}>}
  */
-export const uploadToSupabase = async (fileBuffer, fileName) => {
+export const uploadToSupabase = async (fileBuffer, fileName, contentType = 'application/pdf') => {
     try {
         const { data, error } = await supabase.storage
             .from(BUCKET_NAME)
             .upload(fileName, fileBuffer, {
-                contentType: 'application/pdf',
+                contentType: contentType,
                 upsert: true
             })
 
