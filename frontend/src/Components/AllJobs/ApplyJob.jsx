@@ -191,7 +191,7 @@ function ApplyJob() {
             if (formData.coverLetter) data.append('coverLetter', formData.coverLetter);
 
             const response = await applyForJobRequest(data);
-            
+
             setIsSubmitting(false);
             setIsSuccess(true);
             console.log("Application Submitted:", response.data);
@@ -282,7 +282,7 @@ function ApplyJob() {
                     {/* Personal Information */}
                     <div className="glass-card" style={{ padding: '2.5rem', borderRadius: '20px', animation: 'fadeInUp 0.6s ease-out' }}>
                         <h3 style={SectionTitleS}><span style={{ width: '4px', height: '18px', background: C.primary, borderRadius: '2px' }}></span> Personal Information</h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                        <div className="grid-2-col" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
                             <div>
                                 <label style={LabelS}>First Name</label>
                                 <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="e.g. John" style={{ ...InputS, borderColor: errors.firstName ? C.error : C.border }} />
@@ -305,7 +305,7 @@ function ApplyJob() {
                     {/* Professional Details */}
                     <div className="glass-card" style={{ padding: '2.5rem', borderRadius: '20px', animation: 'fadeInUp 0.7s ease-out' }}>
                         <h3 style={SectionTitleS}><span style={{ width: '4px', height: '18px', background: C.primary, borderRadius: '2px' }}></span> Professional Details</h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                        <div className="grid-2-col" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
                             <div>
                                 <label style={LabelS}>Highest Qualification</label>
                                 <select name="qualification" value={formData.qualification} onChange={handleChange} style={InputS}>
@@ -344,7 +344,7 @@ function ApplyJob() {
 
                     {/* Document Uploads */}
                     <div className="glass-card" style={{ padding: '2.5rem', borderRadius: '20px', animation: 'fadeInUp 0.9s ease-out' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+                        <div className="grid-2-col" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
                             {/* Resume Upload */}
                             <div>
                                 <h3 style={SectionTitleS}><span style={{ width: '4px', height: '18px', background: C.primary, borderRadius: '2px' }}></span> Resume Upload</h3>
@@ -406,7 +406,33 @@ function ApplyJob() {
                 @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
                 .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
                 @keyframes spin { to { transform: rotate(360deg); } }
-                input:focus, textarea:focus, select:focus { border-color: ${C.primary} !important; background: #1E293B !important; }
+                
+                input, select, textarea {
+                    box-sizing: border-box; /* Ensure padding doesn't affect width */
+                    height: 50px; /* Consistent height for inputs and selects */
+                }
+                
+                textarea {
+                    height: auto !important; /* Textareas should height-adjust based on rows */
+                }
+
+                input:focus, textarea:focus, select:focus { 
+                    border-color: ${C.primary} !important; 
+                    background: #1E293B !important; 
+                    box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
+                }
+
+                @media (max-width: 768px) {
+                    .glass-card {
+                        padding: 1.5rem !important;
+                    }
+                    h1 {
+                        font-size: 1.75rem !important;
+                    }
+                    .grid-2-col {
+                        grid-template-columns: 1fr !important;
+                    }
+                }
             `}</style>
         </div>
     );

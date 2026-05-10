@@ -68,7 +68,20 @@ const jobSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ["Engineering", "Sales", "Marketing", "HR", "Finance", "Operations", "Other"],
+      enum: [
+        "Engineering",
+        "Sales",
+        "Marketing",
+        "HR",
+        "Finance",
+        "Operations",
+        "Design",
+        "Customer Support",
+        "Product",
+        "Quality Assurance",
+        "Healthcare",
+        "Other"
+      ],
       required: [true, "Category is required"],
       index: true,
     },
