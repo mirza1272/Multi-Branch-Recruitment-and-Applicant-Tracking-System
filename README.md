@@ -113,6 +113,13 @@ Special thanks to the team behind HRConnect:
 
 ---
 
+## 📄 Detailed Documentation
+For complete system architecture, implementation details, testing, workflows, and deployment information, check:
+
+[PROJECT_REPORT.md](./PROJECT_REPORT.md)
+
+---
+
 ## 📄 License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
