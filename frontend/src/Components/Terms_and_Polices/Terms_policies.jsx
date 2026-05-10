@@ -39,42 +39,47 @@ function TermsPolicies() {
 
                 <PolicySection
                     title="1. Introduction"
-                    content="Welcome to HRConnect. These Terms and Conditions govern your use of our multi-branch recruitment and applicant tracking platform. By accessing or using our services, you agree to comply with and be bound by these terms. If you do not agree, please refrain from using the platform. Our mission is to provide a seamless connection between top talent and leading companies across various industries and locations."
+                    content="Welcome to HRConnect, a premium Multi-Branch Recruitment and Applicant Tracking System (ATS). By using our platform, you agree to these Terms and Conditions. We provide a centralized hub where candidates can discover opportunities across diverse branches and departments, while recruiters leverage intelligent tools to find the perfect match."
                 />
 
                 <PolicySection
-                    title="2. User Accounts and Security"
-                    content="To access certain features, you must register for an account as either a Candidate or an HR Representative. You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to notify us immediately of any unauthorized use. We reserve the right to suspend or terminate accounts that violate our security protocols or provide false information during registration."
+                    title="2. User Roles and Account Security"
+                    content="Our system supports distinct roles for Candidates and HR Professionals (Recruiters/Admins). Candidates are responsible for providing authentic profile data, while HR users must use the platform solely for legitimate recruitment activities. You are responsible for safeguarding your account credentials. Any unauthorized access should be reported immediately to our support team."
                 />
 
                 <PolicySection
-                    title="3. Data Privacy and Collection"
-                    content="Your privacy is paramount to us. We collect personal information such as names, email addresses, phone numbers, and professional details (resumes, experience, skills) solely for recruitment purposes. We use state-of-the-art encryption and secure storage to protect your data. By uploading a resume, you grant HRConnect and its affiliated hiring branches permission to review and process your information for potential employment matches. We do not sell your personal data to third-party marketers."
+                    title="3. Data Privacy and Smart Recommendations"
+                    content="To provide a superior experience, HRConnect utilizes a Smart Recommendation Engine. We collect professional data (skills, experience, branch preferences) to suggest the most relevant job opportunities to candidates. Your data is encrypted and stored securely. We do not share your personal information with external third parties without your explicit consent, except as required for the hiring process."
                 />
 
                 <PolicySection
-                    title="4. Resume and Application Submission"
-                    content="When applying for a job, you must ensure that all provided information is accurate and truthful. Currently, we strictly accept resumes in PDF format to maintain document integrity and ensure a professional review process. Misrepresentation of qualifications, experience, or identity may lead to immediate disqualification from the recruitment process and potential banning from the platform."
+                    title="4. Application and Document Submission"
+                    content="Candidates can apply for positions by uploading a Resume and an optional Cover Letter. We accept Resumes in PDF format to ensure layout consistency. For Cover Letters, we support both PDF and Word (.doc, .docx) formats. Users are responsible for ensuring that uploaded documents are free from malware and contain truthful representations of their professional history."
                 />
 
                 <PolicySection
-                    title="5. Intellectual Property"
-                    content="All content on this platform, including logos, designs, software code, and text, is the property of HRConnect or its content suppliers and is protected by international copyright laws. You may not reproduce, distribute, or modify any part of the platform without explicit written consent from our legal department."
+                    title="5. Interview Scheduling & Third-Party Integration"
+                    content="HRConnect integrates with Google Calendar for seamless interview scheduling. When an HR representative schedules an interview, the system may generate meeting links and calendar invites. Use of these features is subject to both our privacy policy and the respective third-party service terms. We only access the minimum necessary calendar data required to facilitate these appointments."
                 />
 
                 <PolicySection
-                    title="6. Limitation of Liability"
-                    content="HRConnect serves as a facilitator between candidates and employers. While we strive to maintain high standards, we do not guarantee employment or the accuracy of job postings provided by third-party companies. HRConnect shall not be held liable for any direct or indirect damages arising from your use of the platform or any employment decisions made by participating companies."
+                    title="6. Live Search and Job Discovery"
+                    content="Our platform features a real-time Live Search Engine that allows users to filter jobs by title, company, category, and branch location. While we strive for 100% accuracy, job availability is subject to change as positions are filled or updated by our multi-branch network."
                 />
 
                 <PolicySection
-                    title="7. Cookies and Tracking"
-                    content="We use cookies and similar tracking technologies to enhance your browsing experience, analyze site traffic, and remember your preferences (such as branch locations or job categories). You can manage your cookie preferences through your browser settings; however, disabling cookies may limit your access to certain features of the platform."
+                    title="7. Intellectual Property"
+                    content="All software code, UI designs, brand assets, and proprietary algorithms (including our recommendation logic) are the exclusive property of HRConnect. Unauthorized reproduction or reverse engineering of the platform is strictly prohibited."
                 />
 
                 <PolicySection
-                    title="8. Amendments to Terms"
-                    content="We reserve the right to update these Terms & Policies at any time to reflect changes in our services or legal requirements. We will notify users of significant changes through email or a prominent notice on the platform. Continued use of HRConnect following such updates constitutes your acceptance of the revised terms."
+                    title="8. User Safety and Content Integrity"
+                    content="At HRConnect, we prioritize the safety and trust of our community. However, please note that while we facilitate the connection between recruiters and candidates, we do not provide an absolute guarantee regarding the authenticity of every individual job posting. We strongly encourage users to exercise caution and report any suspicious activity. Our team actively monitors for fraudulent patterns and reserves the right to track and remove any job post or user account that appears suspicious, misleading, or in violation of our ethical standards."
+                />
+
+                <PolicySection
+                    title="9. Limitation of Liability"
+                    content="HRConnect acts as a facilitator in the recruitment process. We are not responsible for the ultimate hiring decisions made by branches or for any disputes arising between employers and candidates. The platform is provided 'as-is' without warranties of any kind regarding the continuous availability of the service or the absolute accuracy of user-generated content."
                 />
 
                 <div style={{ marginTop: '5rem', padding: '3rem', background: C.card, borderRadius: '24px', border: `1px solid ${C.border}`, textAlign: 'center' }}>
