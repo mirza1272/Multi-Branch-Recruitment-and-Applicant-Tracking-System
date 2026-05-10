@@ -25,6 +25,10 @@
 - **Interview Scheduling:** Integrated interview scheduler with automated email invites.
 - **Advanced Dashboard:** Real-time stats on hiring progress and branch performance.
 
+### 🤖 Intelligent Features
+- **Smart Recommendation System:** Advanced scoring algorithm that suggests relevant jobs based on department matching and branch proximity.
+- **Live Search Engine:** Real-time, case-insensitive search matching across Titles, Companies, and Departments.
+
 ### 🛡️ Core Infrastructure
 - **Secure Authentication:** JWT-based auth with OTP verification.
 - **Bulletproof Emailing:** Integrated with **SendGrid API** for high-deliverability notifications.
