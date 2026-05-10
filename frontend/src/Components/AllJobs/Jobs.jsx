@@ -205,10 +205,7 @@ function Jobs() {
 
                     {/* Main */}
                     <main style={{ flex: 1, minWidth: 0 }}>
-                        {/* Sort row */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <p style={{ fontSize: '0.8rem', color: C.muted }}>Showing <strong style={{ color: C.text }}>{loading ? "..." : totalJobs}</strong> jobs</p>
-                        </div>
+                        {/* Sort row removed as per request */}
 
                         {error && (
                             <div style={{ background: '#DC2626', borderRadius: '8px', padding: '1rem', marginBottom: '1rem', color: 'white', fontSize: '0.85rem' }}>
