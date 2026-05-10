@@ -1,24 +1,28 @@
 import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, NavLink, useLocation } from 'react-router-dom'
 
 function Header() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('user'));
     const [showDropdown, setShowDropdown] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
 
-    const navItems = ['Home'];
+    const navItems = [
+        { name: 'Home', path: '/' },
+    ];
+
     if (isLoggedIn) {
         if (user?.role === 'recruiter' || user?.role === 'admin') {
-            navItems.push('Dashboard');
+            navItems.push({ name: 'Dashboard', path: '/hr-dashboard' });
         } else {
-            navItems.push('Jobs', 'Applications');
+            navItems.push({ name: 'Jobs', path: '/jobs' }, { name: 'Applications', path: '/applications' });
         }
     } else {
-        navItems.push('Jobs');
+        navItems.push({ name: 'Jobs', path: '/jobs' });
     }
-    navItems.push('About Us', 'Contact Us');
+    navItems.push({ name: 'About Us', path: '/about-us' }, { name: 'Contact Us', path: '/contact-us' });
 
     // Sync auth state across components/tabs
     React.useEffect(() => {
@@ -28,7 +32,6 @@ function Header() {
             setUser(userData ? JSON.parse(userData) : null);
         };
         window.addEventListener('storage', handleAuthChange);
-        // Custom event for same-window updates
         window.addEventListener('auth-change', handleAuthChange);
         return () => {
             window.removeEventListener('storage', handleAuthChange);
@@ -41,10 +44,15 @@ function Header() {
         setIsLoggedIn(false);
         setUser(null);
         setShowDropdown(false);
-        // Trigger event for same-window sync
         window.dispatchEvent(new Event('auth-change'));
         navigate('/');
     };
+
+    const getLinkStyle = (isActive) => ({
+        color: isActive ? '#3B82F6' : '#6B7280',
+        textDecoration: 'none',
+        position: 'relative'
+    });
 
     return (
         <header className="glass sticky top-0 z-50">
@@ -59,21 +67,27 @@ function Header() {
 
                     <nav className="hidden md:flex items-center" style={{ gap: '2rem' }}>
                         {navItems.map((item) => (
-                            <Link key={item} to={
-                                item === 'Home' ? '/' :
-                                    item === 'Jobs' ? '/jobs' :
-                                        item === 'Applications' ? '/applications' :
-                                            item === 'Dashboard' ? '/hr-dashboard' :
-                                                item === 'About Us' ? '/about-us' :
-                                                    item === 'Contact Us' ? '/contact-us' : '#'
-                            }
-                                className="text-sm font-medium transition-all duration-200 relative group"
-                                style={{ color: '#6B7280', textDecoration: 'none' }}
-                                onMouseEnter={e => e.target.style.color = '#3B82F6'}
-                                onMouseLeave={e => e.target.style.color = '#6B7280'}>
-                                {item}
-                                <span style={{ position: 'absolute', bottom: '-4px', left: 0, height: '2px', width: '0', background: '#3B82F6', borderRadius: '99px', transition: 'width 0.25s ease' }} className="group-hover:!w-full" />
-                            </Link>
+                            <NavLink
+                                key={item.name}
+                                to={item.path}
+                                className={({ isActive }) => `text-sm font-medium transition-all duration-200 relative group ${isActive ? 'active-nav-link' : ''}`}
+                                style={({ isActive }) => getLinkStyle(isActive)}
+                            >
+                                {item.name}
+                                <span
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: '-4px',
+                                        left: 0,
+                                        height: '2px',
+                                        width: location.pathname === item.path ? '100%' : '0',
+                                        background: '#3B82F6',
+                                        borderRadius: '99px',
+                                        transition: 'width 0.25s ease'
+                                    }}
+                                    className="group-hover:!w-full"
+                                />
+                            </NavLink>
                         ))}
                     </nav>
 
@@ -134,16 +148,21 @@ function Header() {
             {isMobileMenuOpen && (
                 <div className="md:hidden" style={{ background: '#1E293B', borderBottom: '1px solid #334155', borderTop: '1px solid #334155', position: 'absolute', width: '100%', left: 0, top: '100%', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
                     {navItems.map((item) => (
-                        <Link key={item} to={
-                        item === 'Home' ? '/' :
-                            item === 'Jobs' ? '/jobs' :
-                                item === 'Applications' ? '/applications' :
-                                    item === 'Dashboard' ? '/hr-dashboard' :
-                                        item === 'About Us' ? '/about-us' :
-                                            item === 'Contact Us' ? '/contact-us' : '#'
-                        } onClick={() => setIsMobileMenuOpen(false)} style={{ color: '#F1F5F9', textDecoration: 'none', fontSize: '1rem', fontWeight: '500', padding: '0.5rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                            {item}
-                        </Link>
+                        <NavLink
+                            key={item.name}
+                            to={item.path}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            style={({ isActive }) => ({
+                                color: isActive ? '#3B82F6' : '#F1F5F9',
+                                textDecoration: 'none',
+                                fontSize: '1rem',
+                                fontWeight: '500',
+                                padding: '0.5rem 0',
+                                borderBottom: '1px solid rgba(255,255,255,0.05)'
+                            })}
+                        >
+                            {item.name}
+                        </NavLink>
                     ))}
                     {!isLoggedIn && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
