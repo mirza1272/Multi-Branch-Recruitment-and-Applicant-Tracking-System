@@ -49,6 +49,7 @@
 - **JWT (JSON Web Tokens)** (Secure Auth)
 - **SendGrid API** (Production-grade Emailing)
 - **Multer** (File Upload Handling)
+- **Supabase** (File Store)
 
 ---
 
