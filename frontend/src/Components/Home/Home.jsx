@@ -205,7 +205,7 @@ function Home() {
                                 {branches.map(b => {
                                     const bName = b.branchName || b;
                                     const bId = b._id || b;
-                                    return <option key={bId} value={bName}>{bName}</option>;
+                                    return <option key={bId} value={bId}>{bName}</option>;
                                 })}
                             </select>
                         </div>
