@@ -76,6 +76,7 @@ function AboutUs() {
 
     const candidateFaqs = [
         { q: "Can I upload a CV?", a: "Yes! You can upload your CV in PDF or Word format directly from your profile settings or during the job application process." },
+        { q: "Is there any fee for applying?", a: "No, HRConnect is completely free for job seekers. We never charge candidates for applying to jobs." },
         { q: "How long will the recruitment process take?", a: "The duration varies by company, but typically takes between 2 to 4 weeks from application to offer." },
         { q: "Do you recruit for Graduates and Students?", a: "Absolutely! We have hundreds of internships and entry-level positions tailored specifically for fresh talent." },
         { q: "What does the selection process involve?", a: "It usually includes a resume screening, an initial HR call, and 1-2 technical or behavioral interviews." }
@@ -83,12 +84,20 @@ function AboutUs() {
 
     const hrFaqs = [
         { q: "How do I add multiple branches?", a: "You can easily manage your company's branches from the HR Dashboard when creating or editing a job posting." },
-        { q: "Can I communicate with candidates directly?", a: "Yes, our platform connects you with candidates so you can initiate direct email communication for interviews." },
-        { q: "Is candidate data secure?", a: "Absolutely. We use industry-standard encryption to ensure all applicant data is stored securely." },
+        { q: "How many jobs can I post?", a: "As an HR/Recruiter on HRConnect, you can post unlimited job openings across all your branches and departments." },
+        { q: "Can I communicate with candidates directly?", a: "Yes, our platform connects you with candidates so you can initiate direct communication and schedule interviews." },
+        { q: "Is candidate data secure?", a: "Absolutely. We use industry-standard encryption to ensure all applicant data and company information is stored securely." },
         { q: "How do I track application statuses?", a: "Your dashboard provides a comprehensive view to track and manage candidates through different hiring stages seamlessly." }
     ];
 
-    const faqs = isHR ? hrFaqs : candidateFaqs;
+    const guestFaqs = [
+        { q: "What is HRConnect?", a: "HRConnect is a comprehensive multi-branch recruitment platform and Applicant Tracking System (ATS) designed for both companies and job seekers." },
+        { q: "Who can use this platform?", a: "Anyone! Companies can use it to manage their entire hiring process, and job seekers can use it to find and apply for jobs globally." },
+        { q: "Is it free for candidates?", a: "Yes, it's 100% free for candidates to create profiles, upload resumes, and apply for jobs." },
+        { q: "How do companies join?", a: "Companies can register as Recruiters/Admins to start posting jobs and managing their multi-branch recruitment workflow immediately." }
+    ];
+
+    const faqs = user ? (isHR ? hrFaqs : candidateFaqs) : [...guestFaqs, ...candidateFaqs.slice(0, 2), ...hrFaqs.slice(0, 2)];
 
     return (
         <div style={{ background: C.bg, color: C.text, minHeight: '100vh' }}>
