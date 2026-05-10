@@ -113,6 +113,18 @@ Special thanks to the team behind HRConnect:
 
 ---
 
+## 🔖 Release Versions
+
+### [v2.0] - Latest Release
+- **Enhanced Application Tracking:** Resolved critical issues where application statuses were not correctly synchronizing in real-time.
+- **Role-Aware Restrictions:** Candidates are now prevented from re-applying to jobs they have already submitted for.
+- **Mobile UI Polish:** Optimized dashboard views for devices under 768px.
+
+### [v1.0] - Initial Launch
+- Basic recruitment workflow and multi-branch support.
+
+---
+
 ## 📄 Detailed Documentation
 For complete system architecture, implementation details, testing, workflows, and deployment information, check:
 
