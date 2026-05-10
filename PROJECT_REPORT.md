@@ -4,9 +4,9 @@
 ---
 
 ### **Authors**
-- **Haseeb ur Rahman** (23F-0566) - *Lead Developer & Architect*
-- **Areeba Majeed** (23F-0651) - *UI/UX Designer & Frontend Engineer*
-- **Maheen Fatima** (23F-0595) - *Backend Specialist & Database Administrator*
+- **Haseeb ur Rahman** (23F-0566) - *Lead Developer & Architect (Hnadle Both Frontend and Backend)*
+- **Areeba Majeed** (23F-0651) - *Frontend Engineer*
+- **Maheen Fatima** (23F-0595) - *Database Administrator*
 
 ---
 
