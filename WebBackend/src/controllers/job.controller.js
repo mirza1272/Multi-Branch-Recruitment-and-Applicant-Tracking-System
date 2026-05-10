@@ -44,7 +44,7 @@ export const createJob = asyncHandler(async (req, res) => {
   }
 
   // Validate enum fields
-  const validCategories = ["Engineering", "Sales", "Marketing", "HR", "Finance", "Operations", "Other"];
+  const validCategories = ["Engineering", "Sales", "Marketing", "HR", "Finance", "Operations", "Design", "Customer Support", "Product", "Quality Assurance", "Healthcare", "Other"];
   const validTypes = ["Full Time", "Part Time", "Internship", "Contract"];
 
   if (!validCategories.includes(category)) {
@@ -378,7 +378,7 @@ export const updateJob = asyncHandler(async (req, res) => {
   // Validate enums if being updated
   // ─────────────────────────────────────────────
   if (updates.category) {
-    const validCategories = ["Engineering", "Sales", "Marketing", "HR", "Finance", "Operations", "Other"];
+    const validCategories = ["Engineering", "Sales", "Marketing", "HR", "Finance", "Operations", "Design", "Customer Support", "Product", "Quality Assurance", "Healthcare", "Other"];
     if (!validCategories.includes(updates.category)) {
       throw new ApiError(400, `Invalid category`);
     }
