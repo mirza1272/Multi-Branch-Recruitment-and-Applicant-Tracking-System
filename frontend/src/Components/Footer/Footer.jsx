@@ -4,7 +4,10 @@ import { subscribeRequest } from '../../api/api';
 
 function Footer() {
     const user = JSON.parse(localStorage.getItem('user'));
-    const isHR = user?.role === 'recruiter' || user?.role === 'admin' || user?.role === 'hr';
+    const isLoggedIn = !!user;
+    const role = user?.role?.toLowerCase() || '';
+    const isHR = role === 'recruiter' || role === 'admin' || role === 'hr';
+
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -26,11 +29,23 @@ function Footer() {
         }
     };
 
-    const quickLinks = [
-        ...(!isHR ? [{ label: 'Find Jobs', path: '/jobs' }] : []),
-        ...(user?.role?.toLowerCase() !== 'candidate' ? [{ label: 'Post a Job', path: (user?.role === 'recruiter' || user?.role === 'admin') ? '/post-job' : '/signup' }] : []),
-        { label: 'How it Works', path: '/about-us' }
-    ];
+    const quickLinks = [];
+
+    // 1. Find Jobs: Show to Candidates or Guests, hide for HR
+    if (!isHR) {
+        quickLinks.push({ label: 'Find Jobs', path: '/jobs' });
+    }
+
+    // 2. Post a Job: Show to HR or Guests (leads to signup for guests)
+    if (role !== 'candidate') {
+        quickLinks.push({
+            label: 'Post a Job',
+            path: isHR ? '/post-job' : '/signup'
+        });
+    }
+
+    // 3. How it Works: Show to everyone
+    quickLinks.push({ label: 'How it Works', path: '/about-us' });
 
     return (
         <footer style={{ background: '#111827', color: '#9CA3AF', borderTop: '3px solid #2563EB' }}>
