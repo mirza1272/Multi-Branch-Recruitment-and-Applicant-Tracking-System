@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { getJobByIdRequest, getJobsRequest } from "../../api/api";
+import { getJobByIdRequest, getJobsRequest, getMyApplicationsRequest } from "../../api/api";
 
 const C = { bg: '#0F172A', card: '#1E293B', primary: '#3B82F6', text: '#F1F5F9', muted: '#94A3B8', border: '#334155', accent: '#2DD4BF' };
 
@@ -19,6 +19,8 @@ function JobDetails() {
     const [relatedJobs, setRelatedJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [hasApplied, setHasApplied] = useState(false);
+    const user = JSON.parse(localStorage.getItem('user'));
 
     // Fetch job details
     useEffect(() => {
@@ -38,6 +40,24 @@ function JobDetails() {
         };
 
         fetchJobDetails();
+    }, [id]);
+
+    // Check if user has already applied
+    useEffect(() => {
+        const checkApplicationStatus = async () => {
+            if (user && user.role === 'candidate') {
+                try {
+                    const response = await getMyApplicationsRequest();
+                    const applications = response.data.data.applications || [];
+                    const alreadyApplied = applications.some(app => app.jobId?._id === id);
+                    setHasApplied(alreadyApplied);
+                } catch (err) {
+                    console.error("Error checking application status:", err);
+                }
+            }
+        };
+
+        if (id) checkApplicationStatus();
     }, [id]);
 
     // Fetch related jobs
@@ -206,20 +226,32 @@ function JobDetails() {
 
                             {/* Right Sidebar */}
                             <div className="sidebar-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeInRight 0.6s ease-out' }}>
-                                <button
-                                    onClick={() => {
-                                        const isLoggedIn = !!localStorage.getItem('user');
-                                        if (isLoggedIn) {
-                                            navigate(`/apply-job/${job._id}`);
-                                        } else {
-                                            navigate('/signup');
-                                        }
-                                    }}
-                                    className="btn-primary"
-                                    style={{ width: '100%', padding: '1.1rem', borderRadius: '12px', fontSize: '1rem', fontWeight: '800', boxShadow: '0 10px 20px rgba(37,99,235,0.2)', cursor: 'pointer' }}
-                                >
-                                    Apply For This Job
-                                </button>
+                                {user?.role !== 'recruiter' && user?.role !== 'admin' && (
+                                    <button
+                                        onClick={() => {
+                                            if (user) {
+                                                navigate(`/apply-job/${job._id}`);
+                                            } else {
+                                                navigate('/signup');
+                                            }
+                                        }}
+                                        disabled={hasApplied}
+                                        className="btn-primary"
+                                        style={{
+                                            width: '100%',
+                                            padding: '1.1rem',
+                                            borderRadius: '12px',
+                                            fontSize: '1rem',
+                                            fontWeight: '800',
+                                            boxShadow: hasApplied ? 'none' : '0 10px 20px rgba(37,99,235,0.2)',
+                                            cursor: hasApplied ? 'not-allowed' : 'pointer',
+                                            background: hasApplied ? '#334155' : C.primary,
+                                            opacity: hasApplied ? 0.7 : 1
+                                        }}
+                                    >
+                                        {hasApplied ? 'Already Applied' : 'Apply For This Job'}
+                                    </button>
+                                )}
 
                                 {/* Job Overview */}
                                 <div style={{ background: C.card, borderRadius: '16px', border: `1px solid ${C.border}`, padding: '1.75rem', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
