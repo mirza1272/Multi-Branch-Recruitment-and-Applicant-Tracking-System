@@ -45,11 +45,15 @@ function JobDetails() {
     // Check if user has already applied
     useEffect(() => {
         const checkApplicationStatus = async () => {
-            if (user && user.role === 'candidate') {
+            if (user && user.role?.toLowerCase() === 'candidate') {
                 try {
                     const response = await getMyApplicationsRequest();
-                    const applications = response.data.data.applications || [];
-                    const alreadyApplied = applications.some(app => app.jobId?._id === id);
+                    const applications = response.data?.data?.applications || [];
+                    // Handle both populated jobId object and unpopulated jobId string
+                    const alreadyApplied = applications.some(app => {
+                        const appJobId = app.jobId?._id || app.jobId;
+                        return appJobId?.toString() === id?.toString();
+                    });
                     setHasApplied(alreadyApplied);
                 } catch (err) {
                     console.error("Error checking application status:", err);
@@ -58,7 +62,7 @@ function JobDetails() {
         };
 
         if (id) checkApplicationStatus();
-    }, [id]);
+    }, [id, user]);
 
     // Fetch related jobs
     useEffect(() => {
