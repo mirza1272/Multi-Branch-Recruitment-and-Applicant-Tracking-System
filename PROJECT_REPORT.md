@@ -4,9 +4,9 @@
 ---
 
 ### **Authors**
-- **Haseeb ur Rahman** (23F-0566) - *Lead Developer & Architect (Handled Frontend and Backend)*
-- **Areeba Majeed** (23F-0651) - *MERN Developer*
-- **Maheen Fatima** (23F-0595) - *Frontend Engineer & Database Administrator*
+- **Haseeb ur Rahman** (23F-0566) - *Lead MERN Stack Developer & System Architect*
+- **Areeba Majeed** (23F-0651) - *MERN Stack Developer*
+- **Maheen Fatima** (23F-0595) - *MERN Stack Developer*
 
 ---
 
