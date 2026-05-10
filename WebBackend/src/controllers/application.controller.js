@@ -166,6 +166,7 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
     hrEmail: req.user.email
   };
 
+  
   if (status === "shortlisted") sendShortlistedEmail(emailData).catch(() => { });
   else if (status === "rejected") sendRejectedEmail(emailData).catch(() => { });
   else if (status === "accepted") sendAcceptedEmail({ ...emailData, branchName: "Head Office" }).catch(() => { });
