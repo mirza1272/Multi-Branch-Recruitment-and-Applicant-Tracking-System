@@ -6,7 +6,7 @@
 
 ## 🌐 Live Demo
 - **Frontend:** [https://hrconnect-ats.vercel.app](https://hrconnect-ats.vercel.app)
-- **Backend API:** [https://multi-branch-recruitment-and-applicant.onrender.com](https://multi-branch-recruitment-and-applicant.onrender.com)
+- **Backend URL:** [https://multi-branch-recruitment-and-applicant.onrender.com](https://multi-branch-recruitment-and-applicant.onrender.com)
 
 ---
 
